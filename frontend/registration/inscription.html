@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inscription - MentorÉtude</title>
+    <link rel="stylesheet" href="assets/css/globalfont.css">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-blue-50 flex items-center justify-center min-h-screen p-4">
+
+    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-sm p-8 md:p-12">
+        <div class="text-center mb-10">
+            <div class="bg-indigo-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path d="M12 14l9-5-9-5-9 5 9 5z" />
+                    <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
+                </svg>
+            </div>
+            <h1 class="text-3xl font-bold text-gray-800">Inscription</h1>
+            <p class="text-gray-500 mt-2">Rejoignez notre plateforme de mentorat</p>
+        </div>
+
+        <form method="post" action="{% url 'inscription' %}" class="space-y-6 text-left">
+            {% csrf_token %}
+
+            <div class="space-y-4">
+                <h2 class="text-gray-700 font-semibold uppercase text-xs tracking-wider">Informations personnelles</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        {{ form.first_name }}
+                    </div>
+                    <div>
+                        {{ form.last_name }}
+                    </div>
+                </div>
+            </div>
+
+            <div class="space-y-4">
+                <h2 class="text-gray-700 font-semibold uppercase text-xs tracking-wider">Informations de connexion</h2>
+                
+                <div class="w-full">
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                        <p class="text-red-500 text-xs mt-1">{{ form.email.errors|striptags }}</p>
+                    {% endif %}
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        {{ form.username }}
+                        {% if form.username.errors %}
+                            <p class="text-red-500 text-xs mt-1">{{ form.username.errors|striptags }}</p>
+                        {% endif %}
+                    </div>
+                    
+                    <div>
+                        {{ form.password }}
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="w-full text-center bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition shadow-lg">
+                Créer mon compte
+            </button>
+        </form>
+        
+        <p class="mt-6 text-center text-sm">
+            Déjà inscrit ? <a href="{% url 'connexion' %}" class="text-indigo-600 font-bold hover:underline">Se connecter</a>
+        </p>
+    </div>
+
+    
+</body>
+</html>
