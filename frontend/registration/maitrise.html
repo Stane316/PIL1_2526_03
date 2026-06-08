@@ -2,6 +2,7 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Onboarding - Compétences</title>
 </head>
 <body>
@@ -36,13 +37,15 @@
                 </label>
 
                 <div class="options-details">
-                    <select name="niveau_maitrise_{{ domaine.id }}">
+                    <label for="niveau_maitrise_{{ domaine.id }}" class="visually-hidden">Niveau de maîtrise</label>
+                    <select id="niveau_maitrise_{{ domaine.id }}" name="niveau_maitrise_{{ domaine.id }}">
                         <option value="DEBUTANT" {% if domaine.niveau_actuel == 'DEBUTANT' %}selected{% endif %}>Débutant</option>
                         <option value="INTERMEDIAIRE" {% if domaine.niveau_actuel == 'INTERMEDIAIRE' %}selected{% endif %}>Intermédiaire</option>
                         <option value="AVANCE" {% if domaine.niveau_actuel == 'AVANCE' %}selected{% endif %}>Avancé</option>
                     </select>
                     
-                    <select name="priorite_{{ domaine.id }}">
+                    <label for="priorite_{{ domaine.id }}" class="visually-hidden">Priorité</label>
+                    <select id="priorite_{{ domaine.id }}" name="priorite_{{ domaine.id }}">
                         <option value="1" {% if domaine.priorite_actuelle == 1 %}selected{% endif %}>1 (Faible)</option>
                         <option value="3" {% if domaine.priorite_actuelle == 3 %}selected{% endif %}>3 (Moyen)</option>
                         <option value="5" {% if domaine.priorite_actuelle == 5 %}selected{% endif %}>5 (Urgent)</option>
