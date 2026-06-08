@@ -120,3 +120,69 @@ class DjangoSession(models.Model):
     class Meta:
         managed = False
         db_table = 'django_session'
+
+
+# ============================================================
+# COMPLÉMENTS DES MODÈLES POUR L'ONBOARDING MENTORLINK
+# ============================================================
+
+class Utilisateur(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    nom = models.CharField(max_length=100)
+    prenom = models.CharField(max_length=100)
+    email = models.CharField(max_length=255, unique=True)
+    telephone = models.CharField(max_length=30, unique=True)
+    password_hash = models.CharField(max_length=255)
+    photo_profil = models.TextField(blank=True, null=True)
+    bio = models.TextField(blank=True, null=True)
+    filiere = models.CharField(max_length=50)  # Reçoit : 'GL', 'IA', 'SEIOT', 'CYBERSECURITE', 'IM'
+    niveau = models.CharField(max_length=50)   # Reçoit : 'LICENCE_1', 'LICENCE_2', 'LICENCE_3'
+    actif = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        managed = False
+        db_table = 'utilisateur'
+
+    def __str__(self):
+        return f"{self.prenom} {self.nom}"
+
+
+class Domaine(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    nom = models.CharField(max_length=150, unique=True)
+    description = models.TextField(blank=True, null=True)
+    valide = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        managed = False
+        db_table = 'domaine'
+
+    def __str__(self):
+        return self.nom
+
+
+class Maitrise(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    utilisateur = models.ForeignKey(Utilisateur, models.CASCADE, db_column='utilisateur_id')
+    domaine = models.ForeignKey(Domaine, models.CASCADE, db_column='domaine_id')
+    niveau_maitrise = models.CharField(max_length=50)  # Reçoit : 'DEBUTANT', 'INTERMEDIAIRE', 'AVANCE'
+
+    class Meta:
+        managed = False
+        db_table = 'maitrise'
+        unique_together = (('utilisateur', 'domaine'),)
+
+
+class Besoin(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    utilisateur = models.ForeignKey(Utilisateur, models.CASCADE, db_column='utilisateur_id')
+    domaine = models.ForeignKey(Domaine, models.CASCADE, db_column='domaine_id')
+    niveau_priorite = models.SmallIntegerField()  # Doit être compris entre 1 et 5
+
+    class Meta:
+        managed = False
+        db_table = 'besoin'
+        unique_together = (('utilisateur', 'domaine'),)

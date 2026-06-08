@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Onboarding - Compétences</title>
+</head>
+<body>
+
+    <h1>Étape 2 : Vos points forts et points faibles</h1>
+    <p>Pour chaque domaine, indiquez si vous le maîtrisez (Point fort) ou si vous avez un besoin d'aide (Point faible).</p>
+
+    <form method="post" action="">
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+        {% for domaine in domaines_custom %}
+            <div class="domaine-card">
+                <h4>{{ domaine.nom }}</h4>
+                <p>{{ domaine.description }}</p>
+
+                <label>
+                    <input type="radio" name="statut_{{ domaine.id }}" value="neutre" 
+                        {% if domaine.statut_actuel == 'neutre' %}checked{% endif %}>
+                    Pas concerné
+                </label>
+
+                <label>
+                    <input type="radio" name="statut_{{ domaine.id }}" value="fort" 
+                        {% if domaine.statut_actuel == 'fort' %}checked{% endif %}>
+                    Point fort (Maîtrise)
+                </label>
+
+                <label>
+                    <input type="radio" name="statut_{{ domaine.id }}" value="faible" 
+                        {% if domaine.statut_actuel == 'faible' %}checked{% endif %}>
+                    Point faible (Besoin)
+                </label>
+
+                <div class="options-details">
+                    <select name="niveau_maitrise_{{ domaine.id }}">
+                        <option value="DEBUTANT" {% if domaine.niveau_actuel == 'DEBUTANT' %}selected{% endif %}>Débutant</option>
+                        <option value="INTERMEDIAIRE" {% if domaine.niveau_actuel == 'INTERMEDIAIRE' %}selected{% endif %}>Intermédiaire</option>
+                        <option value="AVANCE" {% if domaine.niveau_actuel == 'AVANCE' %}selected{% endif %}>Avancé</option>
+                    </select>
+                    
+                    <select name="priorite_{{ domaine.id }}">
+                        <option value="1" {% if domaine.priorite_actuelle == 1 %}selected{% endif %}>1 (Faible)</option>
+                        <option value="3" {% if domaine.priorite_actuelle == 3 %}selected{% endif %}>3 (Moyen)</option>
+                        <option value="5" {% if domaine.priorite_actuelle == 5 %}selected{% endif %}>5 (Urgent)</option>
+                    </select>
+                </div>
+            </div>
+            {% endfor %}
+        <br>
+        <button type="submit">Finaliser mon inscription</button>
+    </form>
+
+</body>
+</html>
