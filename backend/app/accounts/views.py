@@ -476,3 +476,16 @@ def modifier_profil_view(request):
         'profil': profil_metier,
     }
     return render(request, 'registration/modif.html', context)
+
+def dashboard_view(request):
+    if not request.session.get('verified_user_id'): 
+        return redirect('connexion')
+    
+    # Récupération du profil pour la photo du header
+    user_email = request.session.get('verified_user_email')
+    profil_metier = Utilisateur.objects.filter(email=user_email).first()
+    
+    return render(request, 'dashboard.html', {
+        'titre_page': 'Dashboard',
+        'profil': profil_metier
+    })

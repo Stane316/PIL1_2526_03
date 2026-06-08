@@ -5,6 +5,8 @@
     <title>Mon Profil - MentorLink</title>
 </head>
 <body>
+    {% include 'header.html' %}
+    {% include 'navbar.html' %}
     <button><a href="{% url 'connexion' %}" >deconnexion</a></button>
     <header>
         {% if profil.photo_profil %}

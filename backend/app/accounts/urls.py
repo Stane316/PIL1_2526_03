@@ -12,6 +12,7 @@ urlpatterns = [
     path('activer-compte/<uidb64>/<token>/', views.activer_compte_view, name='activer_compte'),
     path('completer-profil/filiere/', views.etape_filiere_view, name='etape_filiere'),
     path('completer-profil/competences/', views.etape_maitrise_view, name='etape_maitrise'),
+    path('dashboard/', views.dashboard_view, name='dashboard'),
 ]
 
 
