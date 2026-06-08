@@ -1,0 +1,16 @@
+<header>
+    <div style="border: 1px solid black; padding: 10px; margin-bottom: 10px;">
+        <strong>[LOGO MENTORLINK]</strong> | 
+        
+        <span>Page : {{ titre_page|default:"Tableau de bord" }}</span> | 
+        
+        <span>🔔 Cloche de Notification</span> | 
+        
+        {% if profil.photo_profil %}
+            <img src="{{ profil.photo_profil }}" alt="Mini Profil" width="30" height="30" style="border-radius: 50%; vertical-align: middle;">
+        {% else %}
+            <img src="https://api.dicebear.com/7.x/bottts/svg?seed={{ request.session.username }}" alt="Avatar" width="30" height="30" style="vertical-align: middle;">
+        {% endif %}
+        <span>({{ request.session.username }})</span>
+    </div>
+</header>

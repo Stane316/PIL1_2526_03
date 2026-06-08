@@ -16,9 +16,22 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path,include
+from django.contrib import admin
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+
+from django.conf import settings # <-- IL MANQUE CETTE LIGNE !
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('', include("app.accounts.urls")),
-    
+    path('', include('app.accounts.urls')),
+    path('', include('app.matching.urls')),
+    path('', include('app.messaging.urls')),
+    path('', include('app.notifications.urls')),
+    path('', include('app.publications.urls')), 
 ]
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

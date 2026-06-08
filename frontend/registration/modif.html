@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Modifier mon Profil - MentorLink</title>
+</head>
+<body>
+
+    <h1>Modifier mon Profil</h1>
+    <a href="{% url 'profil' %}">⬅️ Retour au profil</a>
+    <hr>
+
+    <form method="POST" action="{% url 'modifier_profil' %}" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        <section>
+            <h3>📷 Photo de profil</h3>
+            {% if profil.photo_profil %}
+                <p>Photo actuelle : <img src="{{ profil.photo_profil }}" width="80" height="80" alt="Profil"></p>
+            {% endif %}
+            <label for="photo_profil">Importer une nouvelle image depuis votre appareil :</label>
+            <input type="file" id="photo_profil" name="photo_profil" accept="image/*">
+        </section>
+        
+        <br><hr>
+
+        <section>
+            <h3>👤 Informations personnelles</h3>
+            <div>
+                <label for="first_name">Prénom :</label>
+                <input type="text" id="first_name" name="first_name" value="{{ user_django.first_name }}">
+            </div>
+            <br>
+            <div>
+                <label for="last_name">Nom :</label>
+                <input type="text" id="last_name" name="last_name" value="{{ user_django.last_name }}">
+            </div>
+            <br>
+            <div>
+                <label for="telephone">Téléphone :</label>
+                <input type="text" id="telephone" name="telephone" value="{{ profil.telephone }}">
+            </div>
+            <br>
+            <div>
+                <label for="bio">Biographie / À propos :</label><br>
+                <textarea id="bio" name="bio" rows="4" cols="50" placeholder="Parlez-nous un peu de vous...">{{ profil.bio|default:"" }}</textarea>
+            </div>
+        </section>
+
+        <br><hr>
+
+        <section>
+            <h3>🛠️ Compétences (Matières)</h3>
+            <p>Pour modifier vos points forts (maîtrises) ou vos points faibles (besoins), veuillez utiliser notre configurateur dédié :</p>
+            <a href="{% url 'etape_maitrise' %}">
+                <button type="button">Modifier mes compétences (Forces/Faiblesses)</button>
+            </a>
+        </section>
+
+        <br><hr>
+
+        <button type="submit" style="background-color: green; color: white; padding: 10px 20px; font-weight: bold; border-radius: 5px; cursor: pointer;">
+            Enregistrer les modifications
+        </button>
+    </form>
+
+</body>
+</html>

@@ -527,6 +527,170 @@ CREATE INDEX idx_relation_mentore
 CREATE INDEX idx_domaine_nom
     ON domaine(nom);
 
+SELECT * FROM public.auth_user;
+
+
+
+-- ============================================================
+-- IFRI MentorLink — Données initiales : table domaine
+-- ============================================================
+-- À exécuter après mentorlink.sql
+-- Couvre toutes les filières : GL, IA, IM, SE&IoT, Cybersécurité
+-- ============================================================
+
+INSERT INTO domaine (nom, description) VALUES
+
+-- ============================================================
+-- 1. MATHÉMATIQUES FONDAMENTALES
+-- ============================================================
+('Logique mathématique',          'Calcul des prédicats, logique propositionnelle, démonstrations formelles'),
+('Théorie des ensembles',         'Ensembles, relations, fonctions, cardinalité'),
+('Algèbre linéaire',              'Vecteurs, matrices, déterminants, espaces vectoriels'),
+('Algèbre abstraite',             'Groupes, anneaux, corps, morphismes'),
+('Arithmétique & théorie des nombres', 'Divisibilité, modularité, nombres premiers, PGCD'),
+('Analyse mathématique',          'Limites, dérivées, intégrales, suites et séries'),
+('Mathématiques discrètes',       'Combinatoire, graphes, dénombrement, relations de récurrence'),
+('Probabilités',                  'Espaces de probabilité, variables aléatoires, lois classiques'),
+('Statistiques descriptives',     'Moyenne, variance, médiane, représentations graphiques'),
+('Statistiques inférentielles',   'Tests d hypothèse, intervalles de confiance, p-valeur'),
+
+-- ============================================================
+-- 2. MATHÉMATIQUES APPLIQUÉES À L'INFORMATIQUE
+-- ============================================================
+('Théorie des graphes',           'Graphes orientés/non orientés, arbres, parcours, algorithmes classiques (Dijkstra, Kruskal)'),
+('Théorie des automates',         'Automates finis, expressions régulières, langages formels'),
+('Cryptographie mathématique',    'RSA, courbes elliptiques, fonctions de hachage, protocoles'),
+('Optimisation mathématique',     'Programmation linéaire, gradient, méthode du simplex'),
+('Algèbre de Boole',              'Opérateurs logiques, simplification, tables de vérité, circuits'),
+('Mathématiques pour le ML',      'Gradient, dérivées partielles, régression, matrices de covariance'),
+('Théorie de l information',      'Entropie, codage, compression, capacité de canal'),
+('Analyse numérique',             'Méthodes d approximation, interpolation, résolution numérique'),
+
+-- ============================================================
+-- 3. ALGORITHMIQUE & PROGRAMMATION
+-- ============================================================
+('Algorithmique de base',         'Notions de complexité, structures de contrôle, pseudo-code'),
+('Structures de données',         'Tableaux, listes, piles, files, arbres, tas, graphes'),
+('Algorithmes de tri & recherche','Tri rapide, fusion, insertion, recherche binaire'),
+('Récursivité',                   'Fonctions récursives, backtracking, divide and conquer'),
+('Programmation dynamique',       'Memoïsation, sous-problèmes optimaux, sac à dos, LCS'),
+('Programmation orientée objet',  'Classes, héritage, polymorphisme, encapsulation, design patterns'),
+('Programmation fonctionnelle',   'Fonctions pures, immutabilité, récursion, map/filter/reduce'),
+('Programmation Python',          'Syntaxe, structures, bibliothèques standard, fichiers, modules'),
+('Programmation C / C++',         'Pointeurs, gestion mémoire, structures, compilation'),
+('Programmation Java',            'JVM, Collections, exceptions, interfaces, Maven'),
+('Programmation JavaScript',      'DOM, événements, closures, ES6+, asynchrone'),
+('Programmation PHP',             'Syntaxe, sessions, formulaires, interaction base de données'),
+
+-- ============================================================
+-- 4. DÉVELOPPEMENT WEB & MOBILE
+-- ============================================================
+('HTML & CSS',                    'Structure de page, mise en forme, responsive design'),
+('JavaScript avancé',             'Promises, async/await, fetch, modules ES6'),
+('Frameworks frontend',           'React, Vue.js, Angular — composants, état, routing'),
+('Frameworks backend Python',     'Django, Flask — routes, modèles, vues, ORM'),
+('Frameworks backend Node.js',    'Express.js — middlewares, REST API, authentification'),
+('API REST',                      'Conception d API, verbes HTTP, JSON, stateless, documentation'),
+('Développement mobile',          'React Native, Flutter, Android natif — interfaces et navigation'),
+('Tailwind CSS',                  'Utilitaires CSS, responsive, thèmes, composants'),
+
+-- ============================================================
+-- 5. BASES DE DONNÉES
+-- ============================================================
+('Modélisation de bases de données','MCD, MPD, normalisation, dépendances fonctionnelles'),
+('Algèbre relationnelle',         'Sélection, projection, jointures, union, intersection'),
+('Langage SQL',                   'DDL, DML, DQL — CREATE, SELECT, JOIN, GROUP BY, sous-requêtes'),
+('PostgreSQL',                    'Types avancés, ENUM, index, transactions, extensions'),
+('MySQL',                         'Configuration, requêtes, gestion des utilisateurs, optimisation'),
+('Bases de données NoSQL',        'MongoDB, Redis, Cassandra — documents, clés-valeurs, colonnes'),
+('Optimisation SQL',              'Index, plans d exécution, requêtes performantes'),
+
+-- ============================================================
+-- 6. SYSTÈMES & RÉSEAUX
+-- ============================================================
+('Systèmes d exploitation',       'Processus, mémoire virtuelle, système de fichiers, ordonnancement'),
+('Administration Linux',          'Commandes shell, droits, services, cron, gestion de paquets'),
+('Scripting Bash',                'Automatisation, variables, boucles, conditions, pipes'),
+('Réseaux informatiques',         'Modèle OSI/TCP-IP, adressage IP, routage, protocoles'),
+('Administration réseau',         'Configuration routeurs/switches, VLAN, NAT, DNS, DHCP'),
+('Protocoles applicatifs',        'HTTP, HTTPS, FTP, SMTP, SSH, WebSocket'),
+('Virtualisation & conteneurs',   'VirtualBox, VMware, Docker, Docker Compose'),
+
+-- ============================================================
+-- 7. INTELLIGENCE ARTIFICIELLE & DATA
+-- ============================================================
+('Machine Learning',              'Régression, classification, clustering, évaluation de modèles'),
+('Deep Learning',                 'Réseaux de neurones, CNN, RNN, LSTM, frameworks Keras/PyTorch'),
+('Traitement du langage naturel', 'Tokenisation, embeddings, transformers, NLP avec Python'),
+('Vision par ordinateur',         'Traitement d images, détection d objets, OpenCV'),
+('Science des données',           'Pandas, NumPy, visualisation, nettoyage, exploration de données'),
+('Visualisation de données',      'Matplotlib, Seaborn, Plotly, dashboards, graphiques'),
+('Big Data',                      'Hadoop, Spark, traitement distribué de grands volumes'),
+
+-- ============================================================
+-- 8. CYBERSÉCURITÉ
+-- ============================================================
+('Sécurité des systèmes',         'Vulnérabilités OS, durcissement, gestion des droits'),
+('Sécurité des réseaux',          'Firewalls, VPN, IDS/IPS, analyse de trafic'),
+('Sécurité des applications web', 'OWASP Top 10, injections SQL, XSS, CSRF, authentification'),
+('Cryptographie appliquée',       'Chiffrement symétrique/asymétrique, TLS, certificats'),
+('Ethical hacking',               'Tests de pénétration, reconnaissance, exploitation, rapports'),
+('Forensique numérique',          'Analyse post-incident, récupération de données, logs'),
+('Sécurité des objets connectés', 'Protocoles IoT, firmware, vecteurs d attaque embarqués'),
+
+-- ============================================================
+-- 9. SYSTÈMES EMBARQUÉS & IoT
+-- ============================================================
+('Électronique numérique',        'Portes logiques, circuits combinatoires/séquentiels, FPGA'),
+('Microcontrôleurs',              'Arduino, STM32, ESP32 — programmation bas niveau'),
+('Systèmes embarqués Linux',      'Raspberry Pi, Buildroot, drivers, temps réel'),
+('Protocoles IoT',                'MQTT, CoAP, Zigbee, LoRa, communication sans fil'),
+('Systèmes temps réel (RTOS)',    'FreeRTOS, tâches, interruptions, gestion de ressources'),
+('Conception de PCB',             'KiCad, schématique, routage, fabrication'),
+
+-- ============================================================
+-- 10. GÉNIE LOGICIEL & MÉTHODES
+-- ============================================================
+('Génie logiciel',                'Cycle de vie logiciel, qualité, tests, maintenance'),
+('UML & modélisation',            'Diagrammes de classes, séquences, cas d utilisation, activités'),
+('Méthodes agiles',               'Scrum, Kanban, sprints, user stories, rétrospectives'),
+('Tests logiciels',               'Tests unitaires, d intégration, TDD, couverture de code'),
+('Gestion de version Git',        'Commits, branches, merge, rebase, GitHub/GitLab, PRs'),
+('Architecture logicielle',       'MVC, microservices, API Gateway, event-driven, clean architecture'),
+('DevOps & CI/CD',                'GitHub Actions, pipelines, déploiement automatisé, monitoring'),
+('Gestion de projet informatique','Planification, WBS, gestion des risques, suivi'),
+
+-- ============================================================
+-- 11. INFORMATIQUE THÉORIQUE
+-- ============================================================
+('Théorie de la calculabilité',   'Machine de Turing, décidabilité, problème de l arrêt'),
+('Complexité algorithmique',      'Classes P, NP, NP-complet, réductions'),
+('Compilation',                   'Analyse lexicale, syntaxique, génération de code, optimisation'),
+('Systèmes de types',             'Typage statique/dynamique, inférence, polymorphisme paramétrique'),
+('Langages formels',              'Grammaires de Chomsky, automates, expressions rationnelles'),
+
+-- ============================================================
+-- 12. LANGUES & COMMUNICATION
+-- ============================================================
+('Anglais technique',             'Lecture de documentation, rédaction de rapports, vocabulaire IT'),
+('Anglais général',               'Expression orale, grammaire, compréhension, TOEIC/IELTS'),
+('Français professionnel',        'Rédaction de rapports, mails formels, compte-rendus'),
+('Communication orale',           'Prise de parole, présentations, argumentation'),
+('Rédaction technique',           'Documentation, README, spécifications, cahier des charges'),
+
+-- ============================================================
+-- 13. OUTILS & ENVIRONNEMENTS
+-- ============================================================
+('Environnement de développement','VS Code, IntelliJ, configuration, extensions, debugging'),
+('Linux & terminal',              'Navigation, fichiers, processus, éditeurs vim/nano'),
+('Outils de collaboration',       'Trello, Notion, Slack, gestion de tâches en équipe'),
+('Suite bureautique',             'Word, Excel, PowerPoint — usage professionnel'),
+('LaTeX',                         'Rédaction scientifique, formules, bibliographies');
+
+-- ============================================================
+-- Total : ~90 domaines
+-- ============================================================
+
 
 -- ============================================================
 -- FIN DU SCRIPT

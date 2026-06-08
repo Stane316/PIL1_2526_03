@@ -1,1 +1,85 @@
-<h1> page profil</h1>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Mon Profil - MentorLink</title>
+</head>
+<body>
+    {% include 'header.html' %}
+    {% include 'navbar.html' %}
+    <button><a href="{% url 'connexion' %}" >deconnexion</a></button>
+    <header>
+        {% if profil.photo_profil %}
+            <img src="{{ profil.photo_profil }}" alt="Photo de profil" width="150" height="150">
+        {% else %}
+            <img src="https://api.dicebear.com/7.x/bottts/svg?seed={{ user_django.username }}" alt="Avatar par défaut" width="150" height="150">
+        {% endif %}
+
+        <h1>{{ user_django.first_name }} {{ user_django.last_name }}</h1>
+        <p>@{{ user_django.username }}</p>
+
+        <a href="{% url 'modifier_profil' %}">
+            <button type="button">Modifier le profil</button>
+        </a>
+    </header>
+
+    <hr>
+
+    <section>
+        <h2>Informations personnelles & Académiques</h2>
+        <ul>
+            <li><strong>Email :</strong> {{ user_django.email }}</li>
+            <li><strong>Téléphone :</strong> {{ profil.telephone|default:"Non renseigné" }}</li>
+            <li><strong>Filière :</strong> {{ profil.filiere }}</li>
+            <li><strong>Niveau d'étude :</strong> {{ profil.niveau }}</li>
+            <li><strong>Date d'inscription :</strong> {{ user_django.date_joined|date:"d F Y" }}</li>
+        </ul>
+
+        <h3>Biographie / À propos de moi :</h3>
+        <p>{{ profil.bio|default:"Aucune biographie rédigée pour le moment." }}</p>
+    </section>
+
+    <hr>
+
+    <section>
+        <h2>Mon Profil de Compétences</h2>
+
+        <article>
+            <h3>🟢 Mes Points Forts (Maîtrises)</h3>
+            {% if points_forts %}
+                <ul>
+                    {% for maitrise in points_forts %}
+                        <li>
+                            <strong>{{ maitrise.domaine.nom }}</strong> - Niveau : {{ maitrise.niveau_maitrise }}
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Aucun point fort enregistré.</p>
+            {% endif %}
+        </article>
+
+        <br>
+
+        <article>
+            <h3>🔴 Mes Points Faibles (Besoins d'aide)</h3>
+            {% if points_faibles %}
+                <ul>
+                    {% for besoin in points_faibles %}
+                        <li>
+                            <strong>{{ besoin.domaine.nom }}</strong> - Priorité / Urgence : {{编besoin.niveau_priorite }}/5
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% else %}
+                <p>Aucun besoin d'aide enregistré.</p>
+            {% endif %}
+        </article>
+    </section>
+
+</body>
+</html>
+
+
+
+

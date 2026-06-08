@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Onboarding - Filière et Niveau</title>
+</head>
+<body>
+
+    <h1>Étape 1 : Votre parcours universitaire</h1>
+    <p>Sélectionnez votre filière d'étude et votre niveau actuel à l'IFRI.</p>
+
+    <form method="post" action="">
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+        <div>
+            <label for="filiere">Votre Filière :</label>
+            <select id="filiere" name="filiere" required>
+                <option value="" disabled selected>-- Choisissez votre filière --</option>
+                <option value="GL">Génie Logiciel (GL)</option>
+                <option value="IA">Intelligence Artificielle (IA)</option>
+                <option value="SEIOT">Systèmes Embarqués & IoT (SEIOT)</option>
+                <option value="CYBERSECURITE">Cybersécurité (CYBERSECURITE)</option>
+                <option value="IM">Internet et Multimédia (IM)</option>
+            </select>
+        </div>
+
+        <br>
+
+        <div>
+            <label>Votre niveau d'étude :</label>
+            <br>
+            <input type="radio" id="l1" name="niveau" value="LICENCE_1" required>
+            <label for="l1">Licence 1</label>
+            <br>
+            <input type="radio" id="l2" name="niveau" value="LICENCE_2">
+            <label for="l2">Licence 2</label>
+            <br>
+            <input type="radio" id="l3" name="niveau" value="LICENCE_3">
+            <label for="l3">Licence 3</label>
+        </div>
+
+        <br>
+
+        <button type="submit">Valider et continuer</button>
+    </form>
+
+</body>
+</html>
