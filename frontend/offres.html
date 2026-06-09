@@ -43,11 +43,11 @@
             {% if o.utilisateur.photo_profil %}
                 <img src="{{ o.utilisateur.photo_profil }}" class="profile-img" alt="Photo">
             {% else %}
-                <img src="https://api.dicebear.com/7.x/bottts/svg?seed={{ o.utilisateur.username }}" class="profile-img" alt="Avatar">
+                <img src="https://api.dicebear.com/7.x/bottts/svg?seed={{ o.utilisateur.id }}" class="profile-img" alt="Avatar">
             {% endif %}
             
             <div>
-                <p><strong>{{ o.utilisateur.first_name }} {{ o.utilisateur.last_name }}</strong></p>
+                <p><strong>{{ o.utilisateur.prenom }} {{ o.utilisateur.nom }}</strong></p>
                 <p>Statut : {{ o.statut }} | Date : {{ o.date_publication|date:"d/m/Y" }}</p>
                 
                 <p><strong>Matières proposées :</strong> 

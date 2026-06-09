@@ -1,0 +1,1 @@
+TRUNCATE TABLE utilisateur, auth_user CASCADE;
