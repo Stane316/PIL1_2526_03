@@ -1,0 +1,31 @@
+<!-- Top Navbar Component -->
+<header class="d-flex justify-content-between align-items-center pb-3 border-bottom border-light bg-surface sticky-top" style="z-index: 900; margin-top: -2rem; padding-top: 2rem; background: var(--bg-body);">
+    <div>
+        <h4 class="mb-0 fw-bold">{% block page_title %}Tableau de bord{% endblock %}</h4>
+    </div>
+    
+    <div class="d-flex align-items-center gap-3">
+        <!-- Global Search -->
+        <div class="input-group d-none d-md-flex" style="width: 250px;">
+            <span class="input-group-text bg-white border-end-0 text-muted">
+                <i class="bi bi-search"></i>
+            </span>
+            <input type="text" class="form-control border-start-0" placeholder="Rechercher...">
+        </div>
+
+        <!-- User Dropdown -->
+        <div class="dropdown">
+            <a href="#" class="d-flex align-items-center text-decoration-none text-dark dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown" aria-expanded="false">
+                <!-- Django: Dynamic User Avatar and Name -->
+                <img src="https://ui-avatars.com/api/?name=Eyram+Kossou&background=0B3C91&color=fff" alt="avatar" class="rounded-circle me-2 shadow-sm" width="36" height="36">
+                <span class="d-none d-sm-inline fw-medium">Eyram Kossou</span>
+            </a>
+            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2" aria-labelledby="dropdownUser">
+                <li><a class="dropdown-item" href="{% url 'profil' %}"><i class="bi bi-person me-2"></i> Profil</a></li>
+                <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i> Paramètres</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><a class="dropdown-item text-danger" href="{% url 'home' %}"><i class="bi bi-box-arrow-right me-2"></i> Déconnexion</a></li>
+            </ul>
+        </div>
+    </div>
+</header>

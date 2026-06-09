@@ -1,0 +1,24 @@
+<!-- Django Template: Authenticated Layout (Includes Sidebar & Navbar) -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block layout %}
+<div class="wrapper">
+    <!-- Sidebar Component -->
+    {% include "components/sidebar.html" %}
+
+    <!-- Main Content Area -->
+    <div class="main-content">
+        <!-- Top Navbar Component -->
+        {% include "components/navbar.html" %}
+
+        <!-- Content -->
+        <main class="py-4">
+            {% block content %}{% endblock %}
+        </main>
+        
+        <!-- Footer Component -->
+        {% include "components/footer.html" %}
+    </div>
+</div>
+{% endblock %}
