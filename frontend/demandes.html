@@ -1,12 +1,81 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head><meta charset="UTF-8"><title>Demandes - MentorLink</title></head>
+<head>
+    <meta charset="UTF-8">
+    <title>Demandes - MentorLink</title>
+    <style>
+        .profile-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+        .demande-block { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 10px; display: flex; gap: 15px; align-items: start; }
+        .table-horaire { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    </style>
+</head>
 <body>
     {% include 'header.html' %}
     {% include 'navbar.html' %}
+    
     <main>
-        <h2>Contenu : Demandes</h2>
-        <p>Espace réservé aux requêtes de soutien formulées par les étudiants.</p>
+        <h2>Formuler une nouvelle demande d'aide</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <h3>Matières :</h3>
+            {% for b in points_faibles %}
+                <label><input type="checkbox" name="matieres_faibles" value="{{ b.domaine.id }}"> {{ b.domaine.nom }}</label><br>
+            {% endfor %}
+
+            <h3>Disponibilités :</h3>
+            <table class="table-horaire" border="1">
+                <tr><th>Jour</th><th>Matin</th><th>Midi</th><th>Après-midi</th><th>Soir</th></tr>
+                {% for jour, label in jours_choices %}
+                <tr>
+                    <td>{{ label }}</td>
+                    <td><input type="checkbox" name="dispo_{{ jour }}_MATIN" value="1"></td>
+                    <td><input type="checkbox" name="dispo_{{ jour }}_MIDI" value="1"></td>
+                    <td><input type="checkbox" name="dispo_{{ jour }}_APRES-MIDI" value="1"></td>
+                    <td><input type="checkbox" name="dispo_{{ jour }}_SOIR" value="1"></td>
+                </tr>
+                {% endfor %}
+            </table>
+            <button type="submit">Publier la demande</button>
+        </form>
+
+        <h3>Mes demandes récentes</h3>
+       {% for d in mes_demandes %}
+        <div class="demande-block">
+            {% if d.utilisateur.photo_profil %}
+                <img src="{{ d.utilisateur.photo_profil }}" class="profile-img" alt="Photo">
+            {% else %}
+                <img src="https://api.dicebear.com/7.x/bottts/svg?seed={{ d.utilisateur.username }}" class="profile-img" alt="Avatar">
+            {% endif %}
+            
+            <div>
+                <p><strong>{{ d.utilisateur.first_name }} {{ d.utilisateur.last_name }}</strong></p>
+                <p>Statut : {{ d.statut }} | Date : {{ d.date_publication|date:"d/m/Y" }}</p>
+                
+                <p><strong>Matières :</strong> 
+                    {% for dd in d.demandedomaine_set.all %}{{ dd.domaine.nom }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                </p>
+
+                <p><strong>Disponibilités :</strong> 
+                    {% for dispo in d.demandedisponibilite_set.all %}
+                        <span>
+                            {% if dispo.jour_semaine == 1 %}Lundi
+                            {% elif dispo.jour_semaine == 2 %}Mardi
+                            {% elif dispo.jour_semaine == 3 %}Mercredi
+                            {% elif dispo.jour_semaine == 4 %}Jeudi
+                            {% elif dispo.jour_semaine == 5 %}Vendredi
+                            {% elif dispo.jour_semaine == 6 %}Samedi
+                            {% elif dispo.jour_semaine == 7 %}Dimanche
+                            {% else %}Jour inconnu
+                            {% endif %}
+                            ({{ dispo.heure_debut|time:"H:i" }} - {{ dispo.heure_fin|time:"H:i" }})
+                        </span>{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        Aucune disponibilité spécifiée.
+                    {% endfor %}
+                </p>
+            </div>
+        </div>
+        {% endfor %}
     </main>
 </body>
 </html>

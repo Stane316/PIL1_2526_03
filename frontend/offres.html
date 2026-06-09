@@ -1,12 +1,82 @@
 <!DOCTYPE html>
 <html lang="fr">
-<head><meta charset="UTF-8"><title>Offres - MentorLink</title></head>
+<head>
+    <meta charset="UTF-8">
+    <title>Offres - MentorLink</title>
+    <style>
+        .profile-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
+        .demande-block { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 10px; display: flex; gap: 15px; align-items: start; }
+        .table-horaire { width: 100%; border-collapse: collapse; margin: 15px 0; }
+    </style>
+</head>
 <body>
     {% include 'header.html' %}
     {% include 'navbar.html' %}
     <main>
-        <h2>Contenu : Offres</h2>
-        <p>Espace réservé aux propositions d'aide ou de mentorat.</p>
+        <h2>Proposer une nouvelle offre d'aide (Partager vos compétences)</h2>
+        <form method="POST">
+            {% csrf_token %}
+            <h3>Matières que vous maîtrisez :</h3>
+            {% for pf in points_forts %}
+                <label><input type="checkbox" name="matieres_fortes" value="{{ pf.domaine.id }}"> {{ pf.domaine.nom }}</label><br>
+            {% endfor %}
+
+            <h3>Indiquez vos disponibilités pour aider :</h3>
+            <table class="table-horaire" border="1">
+                <tr><th>Jour</th><th>Matin</th><th>Midi</th><th>Après-midi</th><th>Soir</th></tr>
+                {% for jour, label in jours_choices %}
+                <tr>
+                    <td>{{ label }}</td>
+                    <td><input type="checkbox" name="dispo_{{ jour }}_MATIN" value="1"></td>
+                    <td><input type="checkbox" name="dispo_{{ jour }}_MIDI" value="1"></td>
+                    <td><input type="checkbox" name="dispo_{{ jour }}_APRES-MIDI" value="1"></td>
+                    <td><input type="checkbox" name="dispo_{{ jour }}_SOIR" value="1"></td>
+                </tr>
+                {% endfor %}
+            </table>
+            <button type="submit">Publier l'offre d'aide</button>
+        </form>
+
+        <h3>Mes offres d'aide récentes</h3>
+        {% for o in mes_offres %}
+        <div class="demande-block">
+            {% if o.utilisateur.photo_profil %}
+                <img src="{{ o.utilisateur.photo_profil }}" class="profile-img" alt="Photo">
+            {% else %}
+                <img src="https://api.dicebear.com/7.x/bottts/svg?seed={{ o.utilisateur.username }}" class="profile-img" alt="Avatar">
+            {% endif %}
+            
+            <div>
+                <p><strong>{{ o.utilisateur.first_name }} {{ o.utilisateur.last_name }}</strong></p>
+                <p>Statut : {{ o.statut }} | Date : {{ o.date_publication|date:"d/m/Y" }}</p>
+                
+                <p><strong>Matières proposées :</strong> 
+                    {% for dd in o.demandedomaine_set.all %}{{ dd.domaine.nom }}{% if not forloop.last %}, {% endif %}{% endfor %}
+                </p>
+
+                <p><strong>Disponibilités associées :</strong> 
+                    {% for dispo in o.demandedisponibilite_set.all %}
+                        <span>
+                            {% if dispo.jour_semaine == 1 %}Lundi
+                            {% elif dispo.jour_semaine == 2 %}Mardi
+                            {% elif dispo.jour_semaine == 3 %}Mercredi
+                            {% elif dispo.jour_semaine == 4 %}Jeudi
+                            {% elif dispo.jour_semaine == 5 %}Vendredi
+                            {% elif dispo.jour_semaine == 6 %}Samedi
+                            {% elif dispo.jour_semaine == 7 %}Dimanche
+                            {% else %}Jour inconnu
+                            {% endif %}
+                            ({{ dispo.heure_debut|time:"H:i" }} - {{ dispo.heure_fin|time:"H:i" }})
+                        </span>{% if not forloop.last %}, {% endif %}
+                    {% empty %}
+                        Aucune disponibilité spécifiée.
+                    {% endfor %}
+                </p>
+            </div>
+        </div>
+        {% empty %}
+            <p>Aucune offre d'aide publiée pour le moment.</p>
+        {% endfor %}
     </main>
 </body>
 </html>

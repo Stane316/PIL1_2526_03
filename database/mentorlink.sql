@@ -6,7 +6,8 @@
 -- ------------------------------------------------------------
 -- 0. Nettoyage (optionnel, utile en redéploiement)
 -- ------------------------------------------------------------
-
+TRUNCATE TABLE auth_user CASCADE;
+COMMIT;
 DROP TABLE IF EXISTS notification CASCADE;
 DROP TABLE IF EXISTS message CASCADE;
 DROP TABLE IF EXISTS conversation CASCADE;
@@ -531,6 +532,7 @@ SELECT * FROM public.auth_user;
 
 
 
+
 -- ============================================================
 -- IFRI MentorLink — Données initiales : table domaine
 -- ============================================================
@@ -690,7 +692,20 @@ INSERT INTO domaine (nom, description) VALUES
 -- ============================================================
 -- Total : ~90 domaines
 -- ============================================================
+-- 1. On insère l'utilisateur de base dans la table d'authentification de Django (ID = 1)
+INSERT INTO auth_user (id, password, is_superuser, username, first_name, last_name, email, is_staff, is_active, date_joined)
+VALUES (1, 'pbkdf2_sha256$800000$fakehash$', false, 'dev_test', 'Mon', 'Profil', 'test@ifri.bj', false, true, CURRENT_TIMESTAMP)
+ON CONFLICT (id) DO NOTHING;
 
+-- 2. On insère son profil lié dans ta table utilisateur (en utilisant les colonnes réelles de ton .sql)
+INSERT INTO utilisateur (id, filiere, niveau, telephone, bio, statut_couverture)
+VALUES (1, 'GL', 'LICENCE_3', '+229 90909090', 'Développeur backend IFRI', 'DISPONIBLE')
+ON CONFLICT (id) DO NOTHING;
+
+-- 3. On insère les matières (domaines) pour que ton formulaire ne soit pas vide
+INSERT INTO domaine (id, nom, description, valide) VALUES (1, 'Algorithmique', 'Bases de l''algo', true) ON CONFLICT (id) DO NOTHING;
+INSERT INTO domaine (id, nom, description, valide) VALUES (2, 'Bases de données', 'SQL et modélisation', true) ON CONFLICT (id) DO NOTHING;
+INSERT INTO domaine (id, nom, description, valide) VALUES (3, 'Architecture des applications', 'Node/Django', true) ON CONFLICT (id) DO NOTHING;
 
 -- ============================================================
 -- FIN DU SCRIPT

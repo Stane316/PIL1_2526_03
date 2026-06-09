@@ -186,3 +186,5 @@ class Besoin(models.Model):
         managed = False
         db_table = 'besoin'
         unique_together = (('utilisateur', 'domaine'),)
+
+
