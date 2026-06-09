@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Inscription{% endblock %}
+
+{% block layout %}
+<div class="min-vh-100 bg-body d-flex flex-column align-items-center py-5">
+    
+    <!-- Header -->
+    <div class="text-center mb-4">
+        <div class="bg-primary text-white rounded d-inline-flex p-2 mb-2 shadow-sm">
+            <i class="bi bi-mortarboard-fill fs-3"></i>
+        </div>
+        <h2 class="fw-bold text-dark">Rejoignez MentorLink</h2>
+        <p class="text-muted">Créez votre profil académique en quelques étapes.</p>
+    </div>
+
+    <!-- Registration Card (Wizard Style) -->
+    <div class="card border-0 shadow-lg w-100" style="max-width: 800px; border-radius: 16px;">
+        <div class="card-body p-4 p-md-5">
+            
+            <!-- Stepper indicator (Visual only for now, logic via Django forms or JS) -->
+            <div class="d-flex justify-content-between mb-5 position-relative">
+                <div class="position-absolute top-50 start-0 w-100 border-top border-2 border-light" style="z-index: 1;"></div>
+                
+                <div class="position-relative text-center" style="z-index: 2;">
+                    <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-bold mx-auto mb-1 shadow-sm" style="width: 32px; height: 32px;">1</div>
+                    <span class="small fw-medium text-primary">Infos</span>
+                </div>
+                <div class="position-relative text-center" style="z-index: 2;">
+                    <div class="rounded-circle bg-white border border-2 border-light text-muted d-flex align-items-center justify-content-center fw-bold mx-auto mb-1" style="width: 32px; height: 32px;">2</div>
+                    <span class="small fw-medium text-muted">Compétences</span>
+                </div>
+                <div class="position-relative text-center" style="z-index: 2;">
+                    <div class="rounded-circle bg-white border border-2 border-light text-muted d-flex align-items-center justify-content-center fw-bold mx-auto mb-1" style="width: 32px; height: 32px;">3</div>
+                    <span class="small fw-medium text-muted">Disponibilités</span>
+                </div>
+                <div class="position-relative text-center" style="z-index: 2;">
+                    <div class="rounded-circle bg-white border border-2 border-light text-muted d-flex align-items-center justify-content-center fw-bold mx-auto mb-1" style="width: 32px; height: 32px;">4</div>
+                    <span class="small fw-medium text-muted">Profil</span>
+                </div>
+            </div>
+
+            <!-- Django Form -->
+            <form method="POST" action="">
+                <!-- {% csrf_token %} -->
+                
+                <h4 class="fw-bold mb-4">Informations personnelles</h4>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Nom</label>
+                        <input type="text" class="form-control" name="last_name" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Prénom</label>
+                        <input type="text" class="form-control" name="first_name" required>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <label class="form-label">Nom d'utilisateur</label>
+                        <input type="text" class="form-control" name="username" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email Universitaire</label>
+                        <input type="email" class="form-control" name="email" required>
+                    </div>
+                    
+                    <div class="col-md-12">
+                        <label class="form-label">Numéro de téléphone</label>
+                        <input type="tel" class="form-control" name="phone" placeholder="+229 ...">
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label">Mot de passe</label>
+                        <input type="password" class="form-control" name="password" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Confirmation mot de passe</label>
+                        <input type="password" class="form-control" name="password_confirm" required>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-between mt-5">
+                    <a href="#" class="btn btn-light px-4">Annuler</a>
+                    <button type="submit" class="btn btn-primary px-4 fw-bold shadow-sm">Étape suivante <i class="bi bi-arrow-right ms-2"></i></button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+    
+    <div class="mt-4 text-center">
+        <p class="text-muted">Déjà un compte ? <a href="{% url 'login' %}" class="text-primary fw-bold text-decoration-none">Se connecter</a></p>
+    </div>
+</div>
+{% endblock %}
