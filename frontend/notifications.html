@@ -5,6 +5,15 @@
 
 {% block content %}
 
+<style>
+/* Classes de style d'icône pour éviter les fausses erreurs CSS de VS Code */
+.notif-icon-match { background: rgba(11,60,145,.1); color: var(--ml-primary); }
+.notif-icon-message { background: rgba(30,136,229,.1); color: var(--ml-secondary); }
+.notif-icon-offre { background: rgba(46,125,50,.1); color: #2e7d32; }
+.notif-icon-demande { background: rgba(229,57,53,.1); color: #b91c1c; }
+.notif-icon-other { background: rgba(245,158,11,.1); color: #b45309; }
+</style>
+
 {% include 'header.html' %}
 {% include 'navbar.html' %}
 
@@ -34,13 +43,13 @@
       <div class="card-body d-flex align-items-start gap-3 p-3">
 
         <!-- Icône selon le type -->
-        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
-             style="width:42px;height:42px;
-             {% if notif.type == 'match'    %}background:rgba(11,60,145,.1);color:var(--ml-primary);
-             {% elif notif.type == 'message' %}background:rgba(30,136,229,.1);color:var(--ml-secondary);
-             {% elif notif.type == 'offre'   %}background:rgba(46,125,50,.1); color:#2e7d32;
-             {% elif notif.type == 'demande' %}background:rgba(229,57,53,.1); color:#b91c1c;
-             {% else %}background:rgba(245,158,11,.1);color:#b45309;{% endif %}">
+        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0
+                    {% if notif.type == 'match' %}notif-icon-match
+                    {% elif notif.type == 'message' %}notif-icon-message
+                    {% elif notif.type == 'offre' %}notif-icon-offre
+                    {% elif notif.type == 'demande' %}notif-icon-demande
+                    {% else %}notif-icon-other{% endif %}"
+             style="width:42px;height:42px;">
           {% if notif.type == 'match'    %}<i class="bi bi-bullseye"></i>
           {% elif notif.type == 'message' %}<i class="bi bi-chat-left-text-fill"></i>
           {% elif notif.type == 'offre'   %}<i class="bi bi-hand-thumbs-up-fill"></i>
