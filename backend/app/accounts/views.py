@@ -10,7 +10,7 @@ from django.core import signing
 from django.core.files.storage import FileSystemStorage
 from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
-from django.views.decorators.csrf import csrf_exempt  # IMPORTATION DE SÉCURITÉ POUR L'API CHAT
+from django.views.decorators.csrf import csrf_exempt
 from datetime import time, timedelta
 
 from app.core.models import AuthUser, Utilisateur, Domaine, Maitrise, Besoin, DisponibiliteUtilisateur
@@ -143,6 +143,7 @@ def profil(request):
         'profil': profil_metier,
         'points_forts': points_forts,        
         'points_faibles': points_faibles,    
+        'sans_footer': True,  # Nettoie le footer sur la fiche profil !
     }
     
     return render(request, 'profil.html', context)
@@ -377,11 +378,13 @@ def modifier_profil_view(request):
         return redirect('profil')
 
     if request.method == 'POST':
-        # 1. Récupération des données du formulaire textuel
+        # 1. Récupération des données du formulaire textuel et académique
         first_name = request.POST.get('prenom') or user_auth.first_name
         last_name = request.POST.get('nom') or user_auth.last_name
         telephone = request.POST.get('telephone')
         bio = request.POST.get('bio')
+        filiere = request.POST.get('filiere')
+        niveau = request.POST.get('niveau')
 
         if request.FILES.get('photo_profil'):
             fichier_image = request.FILES['photo_profil']
@@ -393,10 +396,12 @@ def modifier_profil_view(request):
         # 2. Enregistrement en base de données unifiée
         AuthUser.objects.filter(id=user_id).update(first_name=first_name, last_name=last_name)
         
-        profil_metier.prenom = first_name  # CORRIGÉ : Met à jour la table custom utilisateur !
-        profil_metier.nom = last_name      # CORRIGÉ : Met à jour la table custom utilisateur !
+        profil_metier.prenom = first_name
+        profil_metier.nom = last_name
         profil_metier.telephone = telephone
         profil_metier.bio = bio
+        profil_metier.filiere = filiere  # Sauvegarde la filière modifiée !
+        profil_metier.niveau = niveau    # Sauvegarde le niveau modifié !
         profil_metier.save()
 
         # 3. Enregistrement dynamique de la grille de disponibilités hebdomadaires
@@ -427,11 +432,48 @@ def modifier_profil_view(request):
         messages.success(request, "Votre profil et vos disponibilités ont été mis à jour avec succès !")
         return redirect('profil')
 
+    # 4. RÉCUPÉRATION DES DISPONIBILITÉS POUR LE PRÉ-COCHAGE
+    db_dispos = DisponibiliteUtilisateur.objects.filter(utilisateur=profil_metier)
+    dispos_actives = set()
+    for d in db_dispos:
+        lbl = None
+        if d.heure_debut.hour == 8: lbl = '08h-10h'
+        elif d.heure_debut.hour == 10: lbl = '10h-12h'
+        elif d.heure_debut.hour == 14: lbl = '14h-16h'
+        elif d.heure_debut.hour == 16: lbl = '16h-18h'
+        elif d.heure_debut.hour == 18: lbl = '18h-20h'
+        
+        jours_slug_map = {1: 'lun', 2: 'mar', 3: 'mer', 4: 'jeu', 5: 'ven', 6: 'sam', 7: 'dim'}
+        j_slug = jours_slug_map.get(d.jour_semaine)
+        if lbl and j_slug:
+            dispos_actives.add(f"{lbl}_{j_slug}")
+            
+    # Construction de la grille pour le template HTML
+    creneaux_disponibilites = []
+    jours_list = [('lun', 'Lun'), ('mar', 'Mar'), ('mer', 'Mer'), ('jeu', 'Jeu'), ('ven', 'Ven'), ('sam', 'Sam')]
+    creneaux_labels = ['08h-10h', '10h-12h', '14h-16h', '16h-18h', '18h-20h']
+    
+    for label in creneaux_labels:
+        jours_data = []
+        for j_slug, j_label in jours_list:
+            is_checked = f"{label}_{j_slug}" in dispos_actives
+            jours_data.append({
+                'slug': j_slug,
+                'label': j_label,
+                'actif': is_checked
+            })
+        creneaux_disponibilites.append({
+            'label': label,
+            'jours': jours_data
+        })
+
     context = {
         'user_django': user_auth,
         'profil': profil_metier,
-        'creneaux_statiques': ["08h-10h", "10h-12h", "14h-16h", "16h-18h", "18h-20h"],
+        'creneaux_disponibilites': creneaux_disponibilites, # On envoie la grille pré-remplie !
+        'creneaux_statiques': creneaux_labels,
         'jours_statiques': ["lun", "mar", "mer", "jeu", "ven", "sam"],
+        'sans_footer': True,  # Supprime le footer de l'édition !
     }
     return render(request, 'registration/modif.html', context)
 
