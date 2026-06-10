@@ -134,6 +134,6 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'alexandrenattayori@gmail.com'
-EMAIL_HOST_PASSWORD = 'vasj ugvp budv ngvo'
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
