@@ -168,13 +168,6 @@ def profil(request):
     
     return render(request, 'profil.html', context)
 
-def modifier_profil_view(request):
-    if not request.user.is_authenticated:
-        return redirect('connexion')
-    # Cette page affichera le formulaire de modification (modif.html) qu'on verra juste après
-    return render(request, 'modif.html')
-
-
 
 from django.shortcuts import render, redirect
 from django.contrib import messages
