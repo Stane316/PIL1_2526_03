@@ -162,10 +162,10 @@
                 </tr>
                 {% empty %}
                 <!-- Grille statique si pas de données -->
-                {% for label in "08h-10h,10h-12h,14h-16h,16h-18h,18h-20h"|split:"," %}
+                {% for label in creneaux_statiques %}
                 <tr>
                   <td class="fw-medium text-muted bg-light">{{ label }}</td>
-                  {% for j in "lun,mar,mer,jeu,ven,sam"|split:"," %}
+                  {% for j in jours_statiques %}
                   <td style="cursor:pointer;">
                     <input type="checkbox" title="Créneau disponible" class="form-check-input"
                            name="dispo_{{ label }}_{{ j }}" value="1">

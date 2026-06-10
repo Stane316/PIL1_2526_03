@@ -399,6 +399,8 @@ def modifier_profil_view(request):
     context = {
         'user_django': user_auth,
         'profil': profil_metier,
+        'creneaux_statiques': ["08h-10h", "10h-12h", "14h-16h", "16h-18h", "18h-20h"],
+        'jours_statiques': ["lun", "mar", "mer", "jeu", "ven", "sam"],
     }
     return render(request, 'registration/modif.html', context)
 

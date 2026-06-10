@@ -5,12 +5,6 @@
 
 {% block content %}
 
-{# ── LES DEUX LIGNES SUIVANTES ONT ÉTÉ SUPPRIMÉES (includes parasites) :
-   {% include 'header.html' %}
-   {% include 'navbar.html' %}
-   header.html et navbar.html ne doivent PAS être inclus ici.
-   La sidebar + navbar_profil sont déjà gérés par base_dashboard.html. #}
-
 <!-- ── Bannière profil incomplet (affichée seulement si profil incomplet) ── -->
 {% if not profil.disponibilites_completes %}
 <div class="alert alert-warning border-warning d-flex align-items-center shadow-sm rounded-3 mb-4"

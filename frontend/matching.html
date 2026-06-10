@@ -5,16 +5,6 @@
 
 {% block content %}
 
-{# CORRECTION : suppression des {% include 'header.html' %} et {% include 'navbar.html' %} parasites
-   CORRECTION PRINCIPALE : Les variables matching_results / match.prenom / match.matieres_communes
-   n'existent PAS dans le contexte. La vue envoie :
-     - offres_compatibles  → liste de dicts {utilisateur, matieres, score}  (onglet "Trouver un mentor")
-     - demandes_compatibles → liste de dicts {utilisateur, matieres, score} (onglet "Aider un étudiant")
-     - onglet_actif         → 'offres' ou 'demandes'
-     - tous_les_domaines    → QuerySet de Domaine (pour les filtres POST)
-     - points_faibles / points_forts → QuerySet Besoin/Maitrise du profil connecté
-#}
-
 <div class="mb-4">
   <p class="text-muted">
     Découvrez les profils les plus compatibles avec vos compétences, lacunes et disponibilités.
