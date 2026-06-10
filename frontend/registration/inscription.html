@@ -82,21 +82,18 @@
           <div class="row g-3">
             <div class="col-md-6">
               <label class="form-label">Nom</label>
-              {{ form.last_name }}
               <input type="text" class="form-control" name="last_name"
                      placeholder="KOSSOU"
                      value="{{ request.POST.last_name|default:'' }}" required>
             </div>
             <div class="col-md-6">
               <label class="form-label">Prénom</label>
-              {{ form.first_name }}
               <input type="text" class="form-control" name="first_name"
                      placeholder="Eyram"
                      value="{{ request.POST.first_name|default:'' }}" required>
             </div>
             <div class="col-md-6">
               <label class="form-label">Email</label>
-              {{ form.email }}
               {% if form.email.errors %}
                   <p class="text-red-500 text-xs mt-1">{{ form.email.errors|striptags }}</p>
               {% endif %}
@@ -106,7 +103,6 @@
             </div>
             <div class="col-md-6">
               <label class="form-label">Téléphone</label>
-              {{ form.telephone }}
               {% if form.telephone.errors %}
                   <p class="text-red-500 text-xs mt-1">{{ form.telephone.errors|striptags }}</p>
               {% endif %}
@@ -116,7 +112,6 @@
             </div>
             <div class="col-12">
               <label class="form-label">Nom d'utilisateur</label>
-              {{ form.username }}
               {% if form.username.errors %}
                   <p class="text-red-500 text-xs mt-1">{{ form.username.errors|striptags }}</p>
               {% endif %}
@@ -127,7 +122,6 @@
             <div class="col-md-6">
               <label class="form-label">Mot de passe</label>
               <div class="position-relative">
-                {{ form.password }}
                 <input type="password" class="form-control" name="password"
                        id="regPwd" placeholder="••••••••" required>
                 <button title="Valider" type="button"
@@ -140,7 +134,6 @@
             <div class="col-md-6">
               <label class="form-label">Confirmation</label>
               <div class="position-relative">
-                {{ form.password_confirm }}
                 <input type="password" class="form-control" name="password_confirm"
                        id="regPwdC" placeholder="••••••••" required>
                 <button title="Valider" type="button"

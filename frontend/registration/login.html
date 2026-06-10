@@ -79,13 +79,11 @@
             value="{{ request.POST.username|default:'' }}"
             required
           >
-          {{ form.username }}
         </div>
 
         <div class="mb-2">
           <label class="form-label d-flex justify-content-between" for="loginPwd">
             <span>Mot de passe</span>
-            {{ form.password }}
             <a href="{% url 'password_reset' %}" class="ml-link small">
               Mot de passe oublié ?
             </a>
