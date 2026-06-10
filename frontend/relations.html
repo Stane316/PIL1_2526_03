@@ -1,0 +1,116 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block page_title %}Relations de Mentorat{% endblock %}
+
+{% block content %}
+
+{% include 'header.html' %}
+{% include 'navbar.html' %}
+
+<div class="mb-4">
+  <p class="text-muted">
+    Suivez l'état de vos collaborations académiques actives, terminez vos contrats de tutorat ou contactez vos tuteurs.
+  </p>
+</div>
+
+<!-- ── Liste des relations de mentorat ───────────────────────────── -->
+<div class="row g-4">
+  {% for rel in relations %}
+  <div class="col-md-6 col-xl-4">
+    <div class="card h-100 border-light shadow-sm">
+      <div class="card-body d-flex flex-column p-4">
+
+        <!-- Statut de la relation -->
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          {% if rel.statut == 'ACTIVE' %}
+            <span class="badge bg-success bg-opacity-10 text-success">
+              <i class="bi bi-play-circle-fill me-1"></i> Active
+            </span>
+          {% elif rel.statut == 'TERMINEE' %}
+            <span class="badge bg-secondary bg-opacity-10 text-secondary">
+              <i class="bi bi-check-circle-fill me-1"></i> Terminée
+            </span>
+          {% else %}
+            <span class="badge bg-warning bg-opacity-10 text-warning">
+              <i class="bi bi-pause-circle-fill me-1"></i> Suspendue
+            </span>
+          {% endif %}
+          <span class="small text-muted" style="font-size:.7rem;">Début : {{ rel.date_debut|date:"d M Y" }}</span>
+        </div>
+
+        <!-- Profil du correspondant -->
+        <div class="d-flex align-items-center gap-3 mb-4">
+          {% if rel.mentor == profil %}
+            <!-- Je suis le mentor, le correspondant est le mentoré (Alice) -->
+            <img src="https://ui-avatars.com/api/?name={{ rel.mentore.prenom }}+{{ rel.mentore.nom }}&background=random"
+                 class="rounded-circle border" width="48" height="48" alt="Avatar">
+            <div>
+              <h6 class="fw-bold mb-0 text-dark">{{ rel.mentore.prenom }} {{ rel.mentore.nom }}</h6>
+              <span class="badge bg-danger bg-opacity-10 text-danger small mt-1" style="font-size: .65rem;">Votre Mentoré(e)</span>
+              <p class="small text-muted mb-0 mt-1">{{ rel.mentore.filiere }} • {{ rel.mentore.niveau }}</p>
+            </div>
+          {% else %}
+            <!-- Je suis le mentoré, le correspondant est le mentor (Koffi) -->
+            <img src="https://ui-avatars.com/api/?name={{ rel.mentor.prenom }}+{{ rel.mentor.nom }}&background=random"
+                 class="rounded-circle border" width="48" height="48" alt="Avatar">
+            <div>
+              <h6 class="fw-bold mb-0 text-dark">{{ rel.mentor.prenom }} {{ rel.mentor.nom }}</h6>
+              <span class="badge bg-primary bg-opacity-10 text-primary small mt-1" style="font-size: .65rem;">Votre Mentor</span>
+              <p class="small text-muted mb-0 mt-1">{{ rel.mentor.filiere }} • {{ rel.mentor.niveau }}</p>
+            </div>
+          {% endif %}
+        </div>
+
+        <!-- Description du besoin ou message d'origine -->
+        <div class="p-3 bg-light rounded-3 mb-4 flex-grow-1">
+          <p class="small text-muted mb-0" style="font-style: italic;">
+            "{{ rel.reponse.message|default:"Discussion et accompagnement initiés" }}"
+          </p>
+        </div>
+
+        <!-- Boutons d'action -->
+        <div class="d-flex gap-2 border-top border-light pt-3 mt-auto">
+          {% if rel.mentor == profil %}
+            <a href="{% url 'message' %}?contact={{ rel.mentore.id }}" class="btn btn-sm btn-outline-primary flex-grow-1">
+              <i class="bi bi-chat-left-text me-1"></i> Écrire
+            </a>
+          {% else %}
+            <a href="{% url 'message' %}?contact={{ rel.mentor.id }}" class="btn btn-sm btn-outline-primary flex-grow-1">
+              <i class="bi bi-chat-left-text me-1"></i> Écrire
+            </a>
+          {% endif %}
+
+          {% if rel.statut == 'ACTIVE' %}
+            <form method="POST" action="{% url 'relations' %}" class="flex-grow-1">
+              {% csrf_token %}
+              <input type="hidden" name="relation_id" value="{{ rel.id }}">
+              <input type="hidden" name="action" value="terminer">
+              <button title="Terminer le mentorat" type="submit" class="btn btn-sm btn-outline-danger w-100"
+                      onclick="return confirm('Voulez-vous vraiment clôturer cette relation de mentorat ?')">
+                <i class="bi bi-check-circle me-1"></i> Clôturer
+              </button>
+            </form>
+          {% endif %}
+        </div>
+
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12">
+    <div class="alert alert-light border text-center py-5">
+      <i class="bi bi-link-45deg fs-1 text-muted d-block mb-3"></i>
+      <h6 class="fw-bold">Aucune relation de mentorat active pour l'instant.</h6>
+      <p class="text-muted small mb-3">
+        Explorez les suggestions automatiques ou parcourez les demandes d'aide des autres étudiants.
+      </p>
+      <a href="{% url 'matching' %}" class="btn btn-primary btn-sm">
+        <i class="bi bi-bullseye me-1"></i>Trouver un profil compatible
+      </a>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}

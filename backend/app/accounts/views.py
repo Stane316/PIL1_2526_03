@@ -506,3 +506,46 @@ def dashboard_view(request):
         'titre_page': 'Dashboard',
         'profil': profil_metier
     })
+
+
+def relations_view(request):
+    """
+    Vue unifiée pour le suivi et la clôture de vos relations de mentorat (US-017 / UC-013 / UC-014).
+    """
+    user_id = request.session.get('verified_user_id')
+    if not user_id:
+        return redirect('connexion')
+        
+    profil_metier = Utilisateur.objects.filter(id=user_id).first()
+    if not profil_metier:
+        return redirect('connexion')
+        
+    # GESTION DU POST : Clôture d'une relation (UC-014)
+    if request.method == 'POST':
+        rel_id = request.POST.get('relation_id')
+        action = request.POST.get('action')
+        if rel_id and action == 'terminer':
+            # On met à jour le statut du tutorat à 'TERMINEE' dans PostgreSQL
+            from app.mentorat.models import RelationMentorat
+            RelationMentorat.objects.filter(id=rel_id).update(
+                statut='TERMINEE',
+                date_fin=timezone.now(),
+                commentaire_fin="Clôturé d'un commun accord par l'étudiant depuis son interface."
+            )
+            messages.success(request, "Relation de mentorat clôturée avec succès !")
+            return redirect('relations')
+
+    # Récupération de l'ensemble des collaborations (Mentor ou Mentoré)
+    from app.mentorat.models import RelationMentorat
+    db_relations = RelationMentorat.objects.filter(
+        mentor=profil_metier
+    ) | RelationMentorat.objects.filter(
+        mentore=profil_metier
+    ).order_by('-date_debut')
+
+    return render(request, 'relations.html', {
+        'titre_page': 'Relations actives',
+        'profil': profil_metier,
+        'relations': db_relations,
+        'sans_footer': True,  # Clean UI plein écran !
+    })

@@ -14,4 +14,5 @@ urlpatterns = [
     path('completer-profil/filiere/', views.etape_filiere_view, name='etape_filiere'),
     path('completer-profil/competences/', views.etape_maitrise_view, name='etape_maitrise'),
     path('dashboard/', views.dashboard_view, name='dashboard'),
+    path('relations/', views.relations_view, name='relations'),
 ]
