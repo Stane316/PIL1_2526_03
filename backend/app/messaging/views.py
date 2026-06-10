@@ -30,8 +30,21 @@ def message_view(request):
             ).first()
             
             if not relation:
+                # Recherche ou création d'une publication pour respecter la contrainte NOT NULL de reponse.publication_id
+                from app.publications.models import Demande
+                pub = Demande.objects.filter(utilisateur=contact_user).first()
+                if not pub:
+                    pub = Demande.objects.create(
+                        utilisateur=contact_user,
+                        type='OFFRE',
+                        statut='OUVERTE',
+                        titre="Discussion directe",
+                        description="Discussion directe initiée depuis le matching",
+                        mode_mentorat='EN_LIGNE'
+                    )
+                
                 reponse_liaison = Reponse.objects.create(
-                    publication=None,
+                    publication=pub,
                     auteur=profil,
                     message="Liaison automatique initiée depuis le profil",
                     statut='ACCEPTEE'

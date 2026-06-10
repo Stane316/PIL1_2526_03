@@ -376,8 +376,8 @@ def modifier_profil_view(request):
         return redirect('profil')
 
     if request.method == 'POST':
-        first_name = request.POST.get('first_name')
-        last_name = request.POST.get('last_name')
+        first_name = request.POST.get('prenom') or user_auth.first_name
+        last_name = request.POST.get('nom') or user_auth.last_name
         telephone = request.POST.get('telephone')
         bio = request.POST.get('bio')
 
