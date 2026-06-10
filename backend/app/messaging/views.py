@@ -146,7 +146,8 @@ def message_view(request):
         'profil': profil,
         'conversations': liste_conversations,
         'conversation_active': conversation_active,
-        'messages_conv': messages_conv
+        'messages_conv': messages_conv,
+        'sans_footer': True,  # Supprime le footer parasite de la page de chat !
     }
     
     return render(request, 'message.html', context)

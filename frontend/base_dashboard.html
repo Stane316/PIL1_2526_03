@@ -19,7 +19,9 @@
     </main>
 
     <!-- Footer -->
-    {% include "components/footer.html" %}
+    {% if not sans_footer %}
+      {% include "components/footer.html" %}
+    {% endif %}
 
   </div>
 </div>
