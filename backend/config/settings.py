@@ -147,6 +147,12 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+# CONFIGURATION CRUCIALE POUR LE CHARGEMENT DU DESIGN :
+# Indique à Django d'aller chercher les fichiers CSS, JS et Images dans le dossier frontend/static/
+STATICFILES_DIRS = [
+    BASE_DIR.parent / 'frontend' / 'static',
+]
+
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
