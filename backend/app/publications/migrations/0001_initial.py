@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'publication',
-                'managed': False,
+                'managed': True,
             },
         ),
         migrations.CreateModel(
@@ -37,7 +37,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'disponibilite_publication',
-                'managed': False,
+                'managed': True,
             },
         ),
         migrations.CreateModel(
@@ -47,7 +47,7 @@ class Migration(migrations.Migration):
             ],
             options={
                 'db_table': 'publication_domaine',
-                'managed': False,
+                'managed': True,
             },
         ),
     ]
