@@ -13,7 +13,7 @@ class Demande(models.Model):
     
     class Meta:
         db_table = 'publication'  # Utilise ta vraie table SQL d'origine
-        managed = False      
+        managed = True      # Activé pour permettre la migration automatique sur une base vide !
 
 class DemandeDomaine(models.Model):
     demande = models.ForeignKey(Demande, on_delete=models.CASCADE, db_column='publication_id')
@@ -21,7 +21,7 @@ class DemandeDomaine(models.Model):
 
     class Meta:
         db_table = 'publication_domaine'  # Utilise ta vraie table SQL d'origine
-        managed = False
+        managed = True      # Activé !
 
 class DemandeDisponibilite(models.Model):
     demande = models.ForeignKey(Demande, on_delete=models.CASCADE, db_column='publication_id')
@@ -32,4 +32,4 @@ class DemandeDisponibilite(models.Model):
 
     class Meta:
         db_table = 'disponibilite_publication'  # Utilise ta vraie table SQL d'origine
-        managed = False
+        managed = True      

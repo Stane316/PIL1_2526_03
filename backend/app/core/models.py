@@ -123,7 +123,7 @@ class DjangoSession(models.Model):
 
 
 # ============================================================
-# COMPLÉMENTS DES MODÈLES POUR L'ONBOARDING MENTORLINK
+# COMPLÉMENTS DES MODÈLES POUR L'ONBOARDING MENTORLINK (MANAGED = TRUE)
 # ============================================================
 
 class Utilisateur(models.Model):
@@ -142,7 +142,7 @@ class Utilisateur(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        managed = False
+        managed = True  # Activé pour permettre la migration automatique sur une base vide !
         db_table = 'utilisateur'
 
     def __str__(self):
@@ -157,7 +157,7 @@ class Domaine(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        managed = False
+        managed = True  # Activé !
         db_table = 'domaine'
 
     def __str__(self):
@@ -171,7 +171,7 @@ class Maitrise(models.Model):
     niveau_maitrise = models.CharField(max_length=50)  # Reçoit : 'DEBUTANT', 'INTERMEDIAIRE', 'AVANCE'
 
     class Meta:
-        managed = False
+        managed = True  # Activé !
         db_table = 'maitrise'
         unique_together = (('utilisateur', 'domaine'),)
 
@@ -183,9 +183,10 @@ class Besoin(models.Model):
     niveau_priorite = models.SmallIntegerField()  # Doit être compris entre 1 et 5
 
     class Meta:
-        managed = False
+        managed = True  # Activé !
         db_table = 'besoin'
         unique_together = (('utilisateur', 'domaine'),)
+
 
 class DisponibiliteUtilisateur(models.Model):
     id = models.BigAutoField(primary_key=True)
@@ -197,4 +198,3 @@ class DisponibiliteUtilisateur(models.Model):
     class Meta:
         managed = True
         db_table = 'disponibilite_utilisateur'
-        
