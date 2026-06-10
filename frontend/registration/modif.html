@@ -60,39 +60,34 @@
           </h6>
           <div class="row g-3">
             <div class="col-md-6">
-              <label class="form-label">Prénom</label>
-              <input type="text" class="form-control" name="prenom"
-                     value="{{ profil.prenom|default:'' }}">
+              <label class="form-label" for="prenom">Prénom</label>
+              <input type="text" class="form-control" id="prenom" name="prenom" placeholder="Votre prénom" title="Prénom" value="{{ profil.prenom|default:'' }}">
             </div>
             <div class="col-md-6">
-              <label class="form-label">Nom</label>
-              <input type="text" class="form-control" name="nom"
-                     value="{{ profil.nom|default:'' }}">
+              <label class="form-label" for="nom">Nom</label>
+              <input type="text" class="form-control" id="nom" name="nom" placeholder="Votre nom" title="Nom" value="{{ profil.nom|default:'' }}">
             </div>
             <div class="col-md-6">
-              <label class="form-label">Email</label>
-              <input type="email" class="form-control" name="email"
-                     value="{{ profil.email|default:'' }}">
+              <label class="form-label" for="email">Email</label>
+              <input type="email" class="form-control" id="email" name="email" placeholder="Votre email" title="Email" value="{{ profil.email|default:'' }}">
             </div>
             <div class="col-md-6">
-              <label class="form-label">Téléphone</label>
-              <input type="tel" class="form-control" name="telephone"
-                     value="{{ profil.telephone|default:'' }}"
-                     placeholder="+229 ...">
+              <label class="form-label" for="telephone">Téléphone</label>
+              <input type="tel" class="form-control" id="telephone" name="telephone" placeholder="+229 ..." title="Téléphone" value="{{ profil.telephone|default:'' }}">
             </div>
             <div class="col-12">
-              <label class="form-label">
+              <label class="form-label" for="photo_profil">
                 Photo de profil
                 <span class="text-muted fw-normal small">(facultatif)</span>
               </label>
-              <input type="file" class="form-control" name="photo" accept="image/*">
+              <input type="file" class="form-control" id="photo_profil" name="photo" title="Photo de profil" placeholder="Télécharger une photo" accept="image/*">
             </div>
             <div class="col-12">
-              <label class="form-label">
+              <label class="form-label" for="bio_profil">
                 Biographie
                 <span class="text-muted fw-normal small">(facultatif)</span>
               </label>
-              <textarea class="form-control" name="bio" rows="3"
+              <textarea class="form-control" id="bio_profil" name="bio" rows="3" placeholder="Présentez-vous..." title="Biographie"
                         placeholder="Quelques mots sur vous, vos intérêts académiques...">{{ profil.bio|default:'' }}</textarea>
             </div>
           </div>
@@ -108,7 +103,7 @@
           <div class="row g-3">
             <div class="col-md-7">
               <label class="form-label">Filière</label>
-              <select class="form-select" name="filiere">
+              <select class="form-select" name="filiere" title="Séléctionner votre filière">
                 <option value="">— Choisir —</option>
                 <option value="GL"        {% if profil.filiere == 'GL'        %}selected{% endif %}>Génie Logiciel (GL)</option>
                 <option value="SI"        {% if profil.filiere == 'SI'        %}selected{% endif %}>Systèmes d'Information (SI)</option>
@@ -119,7 +114,7 @@
             </div>
             <div class="col-md-5">
               <label class="form-label">Niveau</label>
-              <select class="form-select" name="niveau">
+              <select title="Niveau d'études" class="form-select" name="niveau">
                 <option value="">— Choisir —</option>
                 <option value="L1" {% if profil.niveau == 'L1' %}selected{% endif %}>Licence 1</option>
                 <option value="L2" {% if profil.niveau == 'L2' %}selected{% endif %}>Licence 2</option>
@@ -189,7 +184,7 @@
         <a href="{% url 'profil' %}" class="btn btn-ghost">
           <i class="bi bi-x-lg me-1"></i>Annuler
         </a>
-        <button type="submit" class="btn btn-primary px-4">
+        <button title="Soumettre" type="submit" class="btn btn-primary px-4">
           <i class="bi bi-check-lg me-2"></i>Enregistrer les modifications
         </button>
       </div>

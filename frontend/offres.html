@@ -155,17 +155,16 @@
                    placeholder="Ex: Soutien en Algorithmique et structures de données" required>
           </div>
 
-          <!-- NOUVEAU CODE DYNAMIQUE CONFORME -->
           <div class="mb-3">
-             <label class="form-label fw-medium">Matière <span class="text-danger">*</span></label>
-             <select class="form-select" name="matiere" required>
-                <option value="">— Choisir une matière —</option>
-                {% for pf in points_forts %}
-                   <option value="{{ pf.domaine.nom }}">{{ pf.domaine.nom }}</option>
-                {% empty %}
-                   <option value="" disabled>Aucune matière forte configurée dans votre profil</option>
-                {% endfor %}
-             </select>
+            <label class="form-label fw-medium">Matière <span class="text-danger">*</span></label>
+            <select class="form-select" name="matiere" required>
+              <option value="">— Choisir une matière —</option>
+              {% for pf in points_forts %}
+                <option value="{{ pf.domaine.nom }}">{{ pf.domaine.nom }}</option>
+              {% empty %}
+                <option value="" disabled>Aucune matière forte configurée dans votre profil</option>
+              {% endfor %}
+            </select>
           </div>
 
           <div class="mb-3">

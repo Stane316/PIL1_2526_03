@@ -1,121 +1,180 @@
 {% extends "base.html" %}
 {% load static %}
 
-{% block content %}
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-lg-8">
+{% block title %}Vos compétences{% endblock %}
 
-      <!-- En-tête multi-étapes -->
-      <div class="text-center mb-5">
-        <h2 class="fw-bold">Vos domaines d'études 📚</h2>
-        <p class="text-muted">Étape 2 sur 2 : Précisez vos forces et les sujets sur lesquels vous souhaitez être aidé.</p>
-        
-        <div class="d-flex justify-content-center gap-2 mt-3">
-          <span class="badge bg-secondary rounded-pillpx-3">1. Filière & Niveau</span>
-          <span class="badge bg-primary rounded-pill px-3">2. Matières</span>
-        </div>
+{% block layout %}
+
+{#
+  Vue : etape_maitrise_view (accounts/views.py)
+  URL  : /completer-profil/competences/  (name='etape_maitrise')
+  Contexte reçu : domaines_custom (liste de dicts avec id, nom, description, statut_actuel, niveau_actuel, priorite_actuelle)
+  Champs POST : statut_{domaine.id} ('neutre'|'fort'|'faible'), niveau_maitrise_{id}, priorite_{id}
+#}
+
+<div class="ml-auth-wrap">
+
+  <!-- ── Panneau gauche ─────────────────────────────────────────── -->
+  <aside class="ml-auth-side">
+    <a href="{% url 'home' %}" class="ml-logo" style="color:#fff;">
+      <span class="ml-logo-mark"><i class="bi bi-mortarboard-fill"></i></span>
+      MentorLink
+    </a>
+    <div style="position:relative;z-index:2;">
+      <h2 class="text-white" style="font-size:2rem;line-height:1.2;">
+        Étape 2 sur 2 : Vos compétences.
+      </h2>
+      <p style="color:rgba(255,255,255,.8);" class="mt-3">
+        Pour chaque matière, indiquez si c'est un point fort ou un point faible. C'est la base de l'algorithme de matching.
+      </p>
+      <ul class="list-unstyled mt-4" style="color:rgba(255,255,255,.85);">
+        <li class="mb-2">
+          <i class="bi bi-check-circle-fill me-2" style="color:var(--ml-accent);"></i>
+          <strong>Point fort</strong> : vous maîtrisez et pouvez aider
+        </li>
+        <li class="mb-2">
+          <i class="bi bi-check-circle-fill me-2" style="color:var(--ml-accent);"></i>
+          <strong>Point faible</strong> : vous avez besoin d'aide
+        </li>
+        <li>
+          <i class="bi bi-dash-circle-fill me-2" style="color:rgba(255,255,255,.4);"></i>
+          <strong>Neutre</strong> : pas concerné par cette matière
+        </li>
+      </ul>
+      <!-- Indicateur d'étape -->
+      <div class="d-flex gap-2 mt-5">
+        <div style="width:32px;height:4px;background:rgba(255,255,255,.4);border-radius:2px;"></div>
+        <div style="width:32px;height:4px;background:#fff;border-radius:2px;"></div>
+      </div>
+      <p class="small mt-2" style="color:rgba(255,255,255,.6);">Étape 2 sur 2</p>
+    </div>
+    <div class="small" style="color:rgba(255,255,255,.6);position:relative;z-index:2;">
+      © 2026 MentorLink — IFRI
+    </div>
+  </aside>
+
+  <!-- ── Formulaire ─────────────────────────────────────────────── -->
+  <div class="ml-auth-form">
+    <div class="ml-auth-card" style="max-width:640px;">
+
+      <!-- Logo mobile -->
+      <div class="d-lg-none mb-4 text-center">
+        <a href="{% url 'home' %}" class="ml-logo">
+          <span class="ml-logo-mark"><i class="bi bi-mortarboard-fill"></i></span>
+          MentorLink
+        </a>
       </div>
 
-      <!-- Formulaire principal -->
-      <form method="POST" action="{% url 'etape_maitrise' %}" class="card border-0 shadow-sm">
+      <h3 class="mb-1">Vos points forts et points faibles</h3>
+      <p class="text-muted mb-4 small">
+        Cochez votre statut pour chaque matière. Ces choix alimentent directement l'algorithme (pondération 60%).
+      </p>
+
+      <!-- Messages Django -->
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="POST" action="">
         {% csrf_token %}
-        <div class="card-body p-4">
 
-          <p class="small text-muted mb-4">
-            Pour chaque matière enseignée à l'IFRI, indiquez si elle représente un <strong>Point fort</strong> (que vous pouvez enseigner), un <strong>Point faible</strong> (où vous avez besoin d'aide), ou laissez sur <strong>Neutre</strong>.
-          </p>
+        <div class="d-flex flex-column gap-3 mb-5">
 
-          <div class="d-flex flex-column gap-4">
-            {% for domaine in domaines_custom %}
-            <div class="p-3 bg-light rounded-3 border border-light">
-              <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                
+          {% for domaine in domaines_custom %}
+          <div class="card border-light shadow-sm" id="card-domaine-{{ domaine.id }}">
+            <div class="card-body p-3">
+
+              <div class="d-flex justify-content-between align-items-start mb-3">
                 <div>
-                  <h6 class="fw-bold mb-1 text-dark">{{ domaine.nom }}</h6>
-                  <p class="small text-muted mb-0">{{ domaine.description }}</p>
+                  <h6 class="fw-bold mb-0">{{ domaine.nom }}</h6>
+                  {% if domaine.description %}
+                  <p class="text-muted small mb-0">{{ domaine.description }}</p>
+                  {% endif %}
                 </div>
+              </div>
 
-                <!-- Sélecteur de statut -->
-                <div class="btn-group" role="group" aria-label="Statut {{ domaine.nom }}">
-                  
-                  <label class="btn btn-sm {% if domaine.statut_actuel == 'neutre' %}btn-secondary{% else %}btn-outline-secondary{% endif %} statut-btn"
-                         style="cursor:pointer;" for="neutre_{{ domaine.id }}">
-                    <input type="radio" class="visually-hidden statut-radio"
-                           name="statut_{{ domaine.id }}"
-                           id="neutre_{{ domaine.id }}"
-                           value="neutre"
-                           {% if domaine.statut_actuel == 'neutre' %}checked{% endif %}
-                           data-domaine-id="{{ domaine.id }}"
-                           onchange="updateCard(this.dataset.domaineId, this.value)">
-                    <i class="bi bi-dash-circle me-1"></i>Neutre
-                  </label>
+              <!-- Choix du statut via boutons radio stylés -->
+              <div class="d-flex gap-2 flex-wrap">
 
-                  <label class="btn btn-sm {% if domaine.statut_actuel == 'fort' %}btn-success{% else %}btn-outline-success{% endif %} statut-btn"
-                         style="cursor:pointer;" for="fort_{{ domaine.id }}">
-                    <input type="radio" class="visually-hidden statut-radio"
-                           name="statut_{{ domaine.id }}"
-                           id="fort_{{ domaine.id }}"
-                           value="fort"
-                           {% if domaine.statut_actuel == 'fort' %}checked{% endif %}
-                           data-domaine-id="{{ domaine.id }}"
-                           onchange="updateCard(this.dataset.domaineId, this.value)">
-                    <i class="bi bi-star-fill me-1"></i>Point fort
-                  </label>
+                <label class="btn btn-sm {% if domaine.statut_actuel == 'neutre' %}btn-secondary{% else %}btn-outline-secondary{% endif %} statut-btn"
+                       style="cursor:pointer;" for="neutre_{{ domaine.id }}">
+                  <input type="radio" class="visually-hidden statut-radio"
+                         name="statut_{{ domaine.id }}"
+                         id="neutre_{{ domaine.id }}"
+                         value="neutre"
+                         {% if domaine.statut_actuel == 'neutre' %}checked{% endif %}
+                         data-domaine-id="{{ domaine.id }}"
+                         onchange="updateCard(this.dataset.domaineId, this.value)">
+                  <i class="bi bi-dash-circle me-1"></i>Neutre
+                </label>
 
-                  <label class="btn btn-sm {% if domaine.statut_actuel == 'faible' %}btn-danger{% else %}btn-outline-danger{% endif %} statut-btn"
-                         style="cursor:pointer;" for="faible_{{ domaine.id }}">
-                    <input type="radio" class="visually-hidden statut-radio"
-                           name="statut_{{ domaine.id }}"
-                           id="faible_{{ domaine.id }}"
-                           value="faible"
-                           {% if domaine.statut_actuel == 'faible' %}checked{% endif %}
-                           data-domaine-id="{{ domaine.id }}"
-                           onchange="updateCard(this.dataset.domaineId, this.value)">
-                    <i class="bi bi-arrow-up-circle me-1"></i>Point faible
-                  </label>
+                <label class="btn btn-sm {% if domaine.statut_actuel == 'fort' %}btn-success{% else %}btn-outline-success{% endif %} statut-btn"
+                       style="cursor:pointer;" for="fort_{{ domaine.id }}">
+                  <input type="radio" class="visually-hidden statut-radio"
+                         name="statut_{{ domaine.id }}"
+                         id="fort_{{ domaine.id }}"
+                         value="fort"
+                         {% if domaine.statut_actuel == 'fort' %}checked{% endif %}
+                         data-domaine-id="{{ domaine.id }}"
+                         onchange="updateCard(this.dataset.domaineId, this.value)">
+                  <i class="bi bi-star-fill me-1"></i>Point fort
+                </label>
 
-                </div>
+                <label class="btn btn-sm {% if domaine.statut_actuel == 'faible' %}btn-danger{% else %}btn-outline-danger{% endif %} statut-btn"
+                       style="cursor:pointer;" for="faible_{{ domaine.id }}">
+                  <input type="radio" class="visually-hidden statut-radio"
+                         name="statut_{{ domaine.id }}"
+                         id="faible_{{ domaine.id }}"
+                         value="faible"
+                         {% if domaine.statut_actuel == 'faible' %}checked{% endif %}
+                         data-domaine-id="{{ domaine.id }}"
+                         onchange="updateCard(this.dataset.domaineId, this.value)">
+                  <i class="bi bi-arrow-up-circle me-1"></i>Point faible
+                </label>
 
               </div>
 
-              <!-- Options détaillées pour Point Fort -->
-              <div id="details-fort-{{ domaine.id }}" 
+              <!-- Options détaillées (affichées seulement si fort ou faible) -->
+              <div id="details-fort-{{ domaine.id }}"
                    class="mt-3 {% if domaine.statut_actuel != 'fort' %}d-none{% endif %}">
-                <label class="form-label small text-success fw-medium">Niveau d'auto-évaluation (Matière Forte)</label>
+                <label class="form-label small text-muted">Niveau de maîtrise :</label>
                 <select class="form-select form-select-sm" name="niveau_maitrise_{{ domaine.id }}">
-                  <option value="INTERMEDIAIRE" {% if domaine.niveau_actuel == 'INTERMEDIAIRE' %}selected{% endif %}>Intermédiaire (Je comprends et pratique bien)</option>
-                  <option value="AVANCE" {% if domaine.niveau_actuel == 'AVANCE' %}selected{% endif %}>Avancé / Maîtrise (Je peux expliquer et guider un autre étudiant)</option>
-                  <option value="DEBUTANT" {% if domaine.niveau_actuel == 'DEBUTANT' %}selected{% endif %}>Débutant (Bases théoriques uniquement)</option>
+                  <option value="DEBUTANT"      {% if domaine.niveau_actuel == 'DEBUTANT'      %}selected{% endif %}>Débutant</option>
+                  <option value="INTERMEDIAIRE" {% if domaine.niveau_actuel == 'INTERMEDIAIRE' %}selected{% endif %}>Intermédiaire</option>
+                  <option value="AVANCE"        {% if domaine.niveau_actuel == 'AVANCE'        %}selected{% endif %}>Avancé</option>
                 </select>
               </div>
 
-              <!-- Options détaillées pour Point Faible -->
-              <div id="details-faible-{{ domaine.id }}" 
+              <div id="details-faible-{{ domaine.id }}"
                    class="mt-3 {% if domaine.statut_actuel != 'faible' %}d-none{% endif %}">
-                <label class="form-label small text-danger fw-medium">Priorité de besoin de soutien (Matière Faible)</label>
+                <label class="form-label small text-muted">Niveau de priorité :</label>
                 <select class="form-select form-select-sm" name="priorite_{{ domaine.id }}">
-                  <option value="3" {% if domaine.priorite_actuelle == 3 %}selected{% endif %}>Urgence Moyenne (Soutien ponctuel avant les examens)</option>
-                  <option value="5" {% if domaine.priorite_actuelle == 5 %}selected{% endif %}>Urgence Critique (Besoin de rattraper des lacunes importantes)</option>
-                  <option value="1" {% if domaine.priorite_actuelle == 1 %}selected{% endif %}>Besoins faibles / Curiosité</option>
+                  <option value="1" {% if domaine.priorite_actuelle == 1 %}selected{% endif %}>1 — Faible priorité</option>
+                  <option value="3" {% if domaine.priorite_actuelle == 3 %}selected{% endif %}>3 — Priorité moyenne</option>
+                  <option value="5" {% if domaine.priorite_actuelle == 5 %}selected{% endif %}>5 — Urgent</option>
                 </select>
               </div>
 
             </div>
-            {% endfor %}
           </div>
+          {% empty %}
+          <div class="alert alert-warning">
+            Aucune matière disponible pour l'instant. Contactez l'administrateur.
+          </div>
+          {% endfor %}
 
         </div>
-        <div class="card-footer bg-light border-0 d-flex justify-content-between p-4">
-          <a href="{% url 'etape_filiere' %}" class="btn btn-ghost">
-            <i class="bi bi-arrow-left me-2"></i>Retour
-          </a>
-          <button type="submit" class="btn btn-primary px-4">
-            Finaliser mon profil <i class="bi bi-check-lg ms-2"></i>
-          </button>
-        </div>
+
+        <button type="submit" class="btn btn-primary w-100 py-3 fw-semibold">
+          <i class="bi bi-check-lg me-2"></i>Finaliser mon inscription
+        </button>
+
       </form>
-
     </div>
   </div>
 </div>

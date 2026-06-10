@@ -61,7 +61,7 @@
         {% for message in messages %}
           <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
             {{ message }}
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            <button type="button" class="btn-close" title="Fermer"  data-bs-dismiss="alert" aria-label="Fermer"></button>
           </div>
         {% endfor %}
       {% endif %}
@@ -72,7 +72,7 @@
         <!-- Filière -->
         <div class="mb-4">
           <label class="form-label fw-medium">Votre filière à l'IFRI</label>
-          <select class="form-select" name="filiere" required>
+          <select title="Filière d'études" class="form-select" name="filiere" required>
             <option value="" disabled selected>— Choisissez votre filière —</option>
             <option value="GL">Génie Logiciel (GL)</option>
             <option value="IA">Intelligence Artificielle (IA)</option>
@@ -120,7 +120,7 @@
           </div>
         </div>
 
-        <button type="submit" class="btn btn-primary w-100 py-3 fw-semibold">
+        <button title="Soumettre" type="submit" class="btn btn-primary w-100 py-3 fw-semibold">
           Continuer <i class="bi bi-arrow-right ms-2"></i>
         </button>
 
