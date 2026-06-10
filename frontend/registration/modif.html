@@ -1,0 +1,200 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block page_title %}Modifier mon profil{% endblock %}
+
+{% block content %}
+
+<div class="row g-4">
+
+  <!-- ─── Colonne gauche : aperçu profil actuel ─────────────────── -->
+  <div class="col-lg-4">
+    <div class="card border-light shadow-sm">
+      <div class="card-body text-center pt-4 pb-4">
+        {% if profil.photo %}
+          <img src="{{ profil.photo.url }}"
+               alt="{{ profil.prenom }} {{ profil.nom }}"
+               class="rounded-circle shadow-sm mb-3"
+               style="width:100px;height:100px;object-fit:cover;">
+        {% else %}
+          <img src="https://ui-avatars.com/api/?name={{ profil.prenom|default:'U' }}+{{ profil.nom|default:'S' }}&background=0B3C91&color=fff&size=100"
+               alt="Avatar" class="rounded-circle shadow-sm mb-3"
+               style="width:100px;height:100px;">
+        {% endif %}
+        <h6 class="fw-bold mb-1">
+          {{ profil.prenom|default:"—" }} {{ profil.nom|default:"" }}
+        </h6>
+        <p class="text-muted small mb-0">
+          {{ profil.filiere|default:"Filière non renseignée" }}
+        </p>
+        <div class="mt-3">
+          <a href="{% url 'profil' %}" class="btn btn-sm btn-ghost">
+            <i class="bi bi-arrow-left me-1"></i>Retour au profil
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Aide contextuelle -->
+    <div class="alert alert-primary border-0 shadow-sm mt-4" style="background:rgba(11,60,145,.07);">
+      <h6 class="fw-bold mb-2" style="color:var(--ml-primary);">
+        <i class="bi bi-lightbulb-fill me-2"></i>Conseil
+      </h6>
+      <p class="small mb-0" style="color:var(--ml-primary);">
+        Plus votre profil est complet (compétences, lacunes, disponibilités), plus le matching sera précis et pertinent.
+      </p>
+    </div>
+  </div>
+
+  <!-- ─── Colonne droite : formulaire de modification ───────────── -->
+  <div class="col-lg-8">
+
+    <form method="POST" action="{% url 'modifier_profil' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      <!-- Informations personnelles -->
+      <div class="card border-light shadow-sm mb-4">
+        <div class="card-body p-4">
+          <h6 class="fw-bold mb-4 d-flex align-items-center gap-2">
+            <i class="bi bi-person-fill text-primary"></i> Informations personnelles
+          </h6>
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label" for="prenom">Prénom</label>
+              <input type="text" class="form-control" id="prenom" name="prenom" placeholder="Votre prénom" title="Prénom" value="{{ profil.prenom|default:'' }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="nom">Nom</label>
+              <input type="text" class="form-control" id="nom" name="nom" placeholder="Votre nom" title="Nom" value="{{ profil.nom|default:'' }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="email">Email</label>
+              <input type="email" class="form-control" id="email" name="email" placeholder="Votre email" title="Email" value="{{ profil.email|default:'' }}">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label" for="telephone">Téléphone</label>
+              <input type="tel" class="form-control" id="telephone" name="telephone" placeholder="+229 ..." title="Téléphone" value="{{ profil.telephone|default:'' }}">
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="photo_profil">
+                Photo de profil
+                <span class="text-muted fw-normal small">(facultatif)</span>
+              </label>
+              <input type="file" class="form-control" id="photo_profil" name="photo" title="Photo de profil" placeholder="Télécharger une photo" accept="image/*">
+            </div>
+            <div class="col-12">
+              <label class="form-label" for="bio_profil">
+                Biographie
+                <span class="text-muted fw-normal small">(facultatif)</span>
+              </label>
+              <textarea class="form-control" id="bio_profil" name="bio" rows="3" placeholder="Présentez-vous..." title="Biographie"
+                        placeholder="Quelques mots sur vous, vos intérêts académiques...">{{ profil.bio|default:'' }}</textarea>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Profil académique -->
+      <div class="card border-light shadow-sm mb-4">
+        <div class="card-body p-4">
+          <h6 class="fw-bold mb-4 d-flex align-items-center gap-2">
+            <i class="bi bi-mortarboard-fill text-primary"></i> Profil académique
+          </h6>
+          <div class="row g-3">
+            <div class="col-md-7">
+              <label class="form-label">Filière</label>
+              <select class="form-select" name="filiere" title="Séléctionner votre filière">
+                <option value="">— Choisir —</option>
+                <option value="GL"        {% if profil.filiere == 'GL'        %}selected{% endif %}>Génie Logiciel (GL)</option>
+                <option value="SI"        {% if profil.filiere == 'SI'        %}selected{% endif %}>Systèmes d'Information (SI)</option>
+                <option value="Securite"  {% if profil.filiere == 'Securite'  %}selected{% endif %}>Sécurité Informatique</option>
+                <option value="IA"        {% if profil.filiere == 'IA'        %}selected{% endif %}>Intelligence Artificielle</option>
+                <option value="Reseaux"   {% if profil.filiere == 'Reseaux'   %}selected{% endif %}>Réseaux & Télécommunications</option>
+              </select>
+            </div>
+            <div class="col-md-5">
+              <label class="form-label">Niveau</label>
+              <select title="Niveau d'études" class="form-select" name="niveau">
+                <option value="">— Choisir —</option>
+                <option value="L1" {% if profil.niveau == 'L1' %}selected{% endif %}>Licence 1</option>
+                <option value="L2" {% if profil.niveau == 'L2' %}selected{% endif %}>Licence 2</option>
+                <option value="L3" {% if profil.niveau == 'L3' %}selected{% endif %}>Licence 3</option>
+                <option value="M1" {% if profil.niveau == 'M1' %}selected{% endif %}>Master 1</option>
+                <option value="M2" {% if profil.niveau == 'M2' %}selected{% endif %}>Master 2</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Disponibilités générales -->
+      <div class="card border-light shadow-sm mb-4">
+        <div class="card-body p-4">
+          <h6 class="fw-bold mb-2 d-flex align-items-center gap-2">
+            <i class="bi bi-calendar-week-fill text-primary"></i> Disponibilités générales
+          </h6>
+          <p class="small text-muted mb-3">
+            Ces créneaux alimentent directement l'algorithme de matching (pondération 20%).
+          </p>
+          <div class="table-responsive">
+            <table class="table table-bordered text-center align-middle small">
+              <thead class="bg-light">
+                <tr>
+                  <th></th>
+                  <th>Lun</th><th>Mar</th><th>Mer</th>
+                  <th>Jeu</th><th>Ven</th><th>Sam</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for creneau in creneaux_disponibilites %}
+                <tr>
+                  <td class="fw-medium text-muted bg-light text-nowrap">{{ creneau.label }}</td>
+                  {% for jour in creneau.jours %}
+                  <td style="cursor:pointer;">
+                    <input type="checkbox"
+                           title="Créneau disponible"
+                           class="form-check-input"
+                           name="dispo_{{ creneau.slug }}_{{ jour.slug }}"
+                           value="1"
+                           {% if jour.actif %}checked{% endif %}>
+                  </td>
+                  {% endfor %}
+                </tr>
+                {% empty %}
+                <!-- Grille statique si pas de données -->
+                {% for label in creneaux_statiques %}
+                <tr>
+                  <td class="fw-medium text-muted bg-light">{{ label }}</td>
+                  {% for j in jours_statiques %}
+                  <td style="cursor:pointer;">
+                    <input type="checkbox" title="Créneau disponible" class="form-check-input"
+                           name="dispo_{{ label }}_{{ j }}" value="1">
+                  </td>
+                  {% endfor %}
+                </tr>
+                {% endfor %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Boutons d'action -->
+      <div class="d-flex gap-3 justify-content-end">
+        <a href="{% url 'etape_maitrise' %}" class="btn btn-outline-primary">
+          <i class="bi bi-pencil-square me-1"></i>Modifier mes matières (forces/faiblesses)
+        </a>
+        <a href="{% url 'profil' %}" class="btn btn-ghost">
+          <i class="bi bi-x-lg me-1"></i>Annuler
+        </a>
+        <button title="Soumettre" type="submit" class="btn btn-primary px-4">
+          <i class="bi bi-check-lg me-2"></i>Enregistrer les modifications
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+{% endblock %}

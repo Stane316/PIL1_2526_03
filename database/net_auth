@@ -1,0 +1,6 @@
+-- Nettoyage global en cascade pour éviter les violations de clés étrangères
+TRUNCATE TABLE utilisateur, auth_user CASCADE;
+
+-- Réinitialisation des compteurs d'auto-incrémentation à 1
+ALTER SEQUENCE utilisateur_id_seq RESTART WITH 1;
+ALTER SEQUENCE auth_user_id_seq RESTART WITH 1;

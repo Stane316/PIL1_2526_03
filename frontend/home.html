@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Bienvenue{% endblock %}
+
+{% block layout %}
+
+<div class="min-vh-100 d-flex align-items-center justify-content-center"
+     style="background: linear-gradient(135deg, #0B3C91 0%, #1E88E5 100%);">
+
+  <div class="text-center px-4" style="max-width: 520px; width: 100%;">
+
+    <!-- Logo -->
+    <div class="mb-5">
+      <div class="d-inline-flex align-items-center justify-content-center rounded-circle mb-4"
+           style="width:72px; height:72px; background:rgba(255,255,255,.15); backdrop-filter:blur(8px);">
+        <i class="bi bi-mortarboard-fill text-white" style="font-size:2rem;"></i>
+      </div>
+      <h1 class="text-white fw-bold mb-2" style="font-size: 2.2rem; letter-spacing: -0.02em;">
+        MentorLink
+      </h1>
+      <p class="mb-0" style="color: rgba(255,255,255,.75); font-size: 1rem;">
+        La plateforme de mentorat académique de l'IFRI
+      </p>
+    </div>
+
+    <!-- Carte d'accueil -->
+    <div class="card border-0 shadow-lg p-4 p-md-5"
+         style="border-radius: 24px; animation: fadeUp .45s cubic-bezier(.22,1,.36,1) both;">
+
+      <h2 class="fw-bold mb-2" style="font-size: 1.5rem;">Bienvenue</h2>
+      <p class="text-muted mb-4">
+        Choisissez une option pour accéder à votre espace académique.
+      </p>
+
+      <!-- Boutons d'action -->
+      <div class="d-grid gap-3">
+        <a href="{% url 'connexion' %}" class="btn btn-primary btn-lg fw-semibold" style="border-radius: 12px; padding: .85rem;">
+          <i class="bi bi-box-arrow-in-right me-2"></i>
+          Se connecter
+        </a>
+        <a href="{% url 'inscription' %}" class="btn btn-outline-primary btn-lg fw-semibold" style="border-radius: 12px; padding: .85rem;">
+          <i class="bi bi-person-plus-fill me-2"></i>
+          Créer un compte
+        </a>
+      </div>
+
+      <!-- Séparateur -->
+      <hr class="my-4" style="border-color: var(--ml-border);">
+
+      <!-- Statistiques -->
+      <div class="row g-3 text-center">
+        <div class="col-4">
+          <div class="fw-bold" style="font-size: 1.3rem; color: var(--ml-primary);">240+</div>
+          <div class="small text-muted">Étudiants</div>
+        </div>
+        <div class="col-4">
+          <div class="fw-bold" style="font-size: 1.3rem; color: var(--ml-primary);">120+</div>
+          <div class="small text-muted">Matchs</div>
+        </div>
+        <div class="col-4">
+          <div class="fw-bold" style="font-size: 1.3rem; color: var(--ml-primary);">35+</div>
+          <div class="small text-muted">Matières</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Footer -->
+    <p class="mt-4 small" style="color: rgba(255,255,255,.5);">
+      © 2026 MentorLink — IFRI-UAC
+    </p>
+
+  </div>
+</div>
+
+<style>
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
+{% endblock %}

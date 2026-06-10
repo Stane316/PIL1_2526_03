@@ -1,0 +1,2267 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>IFRI MentorLink — Rapport Final de Projet</title>
+
+  <!-- Bootstrap 5 CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <!-- Bootstrap Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet" />
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ═══════════════════════════════════════
+       DESIGN TOKENS
+    ═══════════════════════════════════════ */
+    :root {
+      --primary:       #1a56db;
+      --primary-dark:  #1341ac;
+      --primary-light: #e8f0fe;
+      --accent:        #0e9f6e;
+      --accent-light:  #d1fae5;
+      --warning:       #f59e0b;
+      --danger:        #ef4444;
+      --surface:       #ffffff;
+      --bg:            #f8fafc;
+      --bg-alt:        #f1f5f9;
+      --border:        #e2e8f0;
+      --text:          #1e293b;
+      --text-muted:    #64748b;
+      --text-light:    #94a3b8;
+      --navy:          #0f172a;
+      --code-bg:       #0f172a;
+      --code-text:     #e2e8f0;
+      --radius:        12px;
+      --radius-lg:     20px;
+      --shadow:        0 1px 3px rgba(0,0,0,.07), 0 4px 16px rgba(0,0,0,.06);
+      --shadow-lg:     0 8px 32px rgba(0,0,0,.12);
+    }
+
+    /* ═══════════════════════════════════════
+       BASE
+    ═══════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.75;
+      color: var(--text);
+      background: var(--bg);
+      margin: 0;
+    }
+
+    /* ═══════════════════════════════════════
+       PAGES (multi-page system)
+    ═══════════════════════════════════════ */
+    .page {
+      display: none;
+      min-height: 100vh;
+      animation: fadeIn .35s ease;
+    }
+    .page.active { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ═══════════════════════════════════════
+       NAV BAR (sticky, appears after cover)
+    ═══════════════════════════════════════ */
+    #main-nav {
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      background: rgba(255,255,255,.95);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 0;
+    }
+
+    .nav-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 0 24px;
+      height: 58px;
+    }
+
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 15px;
+      color: var(--navy);
+      text-decoration: none;
+    }
+    .nav-brand .dot {
+      width: 30px; height: 30px;
+      background: var(--primary);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      font-size: 13px;
+    }
+
+    .nav-pages {
+      display: flex;
+      gap: 4px;
+      list-style: none;
+      margin: 0; padding: 0;
+    }
+
+    .nav-pages li a {
+      display: block;
+      padding: 6px 14px;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: all .2s;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .nav-pages li a:hover,
+    .nav-pages li a.active {
+      background: var(--primary-light);
+      color: var(--primary);
+    }
+
+    .nav-mobile-btn { display: none; }
+
+    @media (max-width: 860px) {
+      .nav-pages { display: none; }
+      .nav-mobile-btn { display: block; }
+    }
+
+    /* ═══════════════════════════════════════
+       COVER PAGE
+    ═══════════════════════════════════════ */
+    #page-cover {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f172a 0%, #1a3a6e 50%, #1a56db 100%);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #page-cover::before {
+      content: '';
+      position: absolute;
+      top: -120px; right: -120px;
+      width: 500px; height: 500px;
+      background: radial-gradient(circle, rgba(26,86,219,.35) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+    #page-cover::after {
+      content: '';
+      position: absolute;
+      bottom: -80px; left: -80px;
+      width: 380px; height: 380px;
+      background: radial-gradient(circle, rgba(14,159,110,.2) 0%, transparent 70%);
+      border-radius: 50%;
+    }
+
+    .cover-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 64px 32px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .cover-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,.12);
+      border: 1px solid rgba(255,255,255,.2);
+      border-radius: 100px;
+      padding: 6px 18px;
+      font-size: 12px;
+      font-weight: 600;
+      color: rgba(255,255,255,.85);
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 32px;
+    }
+
+    .cover-logo {
+      width: 80px; height: 80px;
+      background: rgba(255,255,255,.15);
+      border: 2px solid rgba(255,255,255,.25);
+      border-radius: 20px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 28px;
+      font-size: 36px;
+      color: #fff;
+    }
+
+    .cover-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(40px, 7vw, 72px);
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.1;
+      margin-bottom: 16px;
+    }
+
+    .cover-subtitle {
+      font-size: 18px;
+      color: rgba(255,255,255,.7);
+      margin-bottom: 48px;
+      max-width: 500px;
+    }
+
+    .cover-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      justify-content: center;
+      margin-bottom: 52px;
+    }
+    .cover-meta-item {
+      background: rgba(255,255,255,.1);
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 10px;
+      padding: 12px 20px;
+      text-align: center;
+      min-width: 140px;
+    }
+    .cover-meta-item .label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: rgba(255,255,255,.55);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    .cover-meta-item .value {
+      font-size: 14px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .btn-start {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      background: #fff;
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 15px;
+      padding: 14px 36px;
+      border-radius: 100px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 24px rgba(0,0,0,.25);
+      transition: all .25s;
+      text-decoration: none;
+    }
+    .btn-start:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 32px rgba(0,0,0,.3);
+      color: var(--primary-dark);
+    }
+    .btn-start i { font-size: 18px; }
+
+    .cover-footer {
+      padding: 20px 32px;
+      border-top: 1px solid rgba(255,255,255,.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      position: relative;
+      z-index: 2;
+    }
+    .cover-footer span {
+      font-size: 12px;
+      color: rgba(255,255,255,.5);
+    }
+
+    /* ═══════════════════════════════════════
+       PAGE LAYOUT (content pages)
+    ═══════════════════════════════════════ */
+    .page-wrapper {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 48px 24px 80px;
+    }
+
+    /* ═══════════════════════════════════════
+       SECTION HERO
+    ═══════════════════════════════════════ */
+    .section-hero {
+      background: linear-gradient(135deg, var(--navy) 0%, var(--primary-dark) 100%);
+      border-radius: var(--radius-lg);
+      padding: 48px 40px;
+      margin-bottom: 44px;
+      color: #fff;
+      position: relative;
+      overflow: hidden;
+    }
+    .section-hero::after {
+      content: '';
+      position: absolute;
+      right: -40px; top: -40px;
+      width: 220px; height: 220px;
+      background: rgba(255,255,255,.05);
+      border-radius: 50%;
+    }
+    .section-hero .chapter-num {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,.55);
+      margin-bottom: 10px;
+    }
+    .section-hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(26px, 4vw, 40px);
+      font-weight: 800;
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+    .section-hero p {
+      color: rgba(255,255,255,.75);
+      font-size: 16px;
+      max-width: 640px;
+      margin: 0;
+    }
+
+    /* ═══════════════════════════════════════
+       TYPOGRAPHY
+    ═══════════════════════════════════════ */
+    h2.section-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 8px;
+    }
+    h3.subsection-title {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 12px;
+    }
+    .lead-text {
+      font-size: 16px;
+      color: var(--text-muted);
+      line-height: 1.8;
+      margin-bottom: 28px;
+    }
+    .section-divider {
+      height: 1px;
+      background: var(--border);
+      margin: 48px 0;
+    }
+    .label-pill {
+      display: inline-block;
+      padding: 2px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+    }
+
+    /* ═══════════════════════════════════════
+       CARDS
+    ═══════════════════════════════════════ */
+    .card-custom {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 28px;
+      box-shadow: var(--shadow);
+      height: 100%;
+      transition: box-shadow .2s, transform .2s;
+    }
+    .card-custom:hover {
+      box-shadow: var(--shadow-lg);
+      transform: translateY(-2px);
+    }
+    .card-icon {
+      width: 44px; height: 44px;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+      margin-bottom: 14px;
+    }
+    .card-icon.blue  { background: var(--primary-light); color: var(--primary); }
+    .card-icon.green { background: var(--accent-light);  color: var(--accent);  }
+    .card-icon.amber { background: #fef3c7; color: #d97706; }
+    .card-icon.red   { background: #fee2e2; color: #dc2626; }
+    .card-icon.purple{ background: #ede9fe; color: #7c3aed; }
+    .card-icon.teal  { background: #ccfbf1; color: #0d9488; }
+
+    /* ═══════════════════════════════════════
+       TABLES
+    ═══════════════════════════════════════ */
+    .table-pro {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 14px;
+    }
+    .table-pro thead th {
+      background: var(--navy);
+      color: #fff;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      padding: 12px 16px;
+    }
+    .table-pro thead th:first-child { border-radius: 10px 0 0 0; }
+    .table-pro thead th:last-child  { border-radius: 0 10px 0 0; }
+    .table-pro tbody tr { transition: background .15s; }
+    .table-pro tbody tr:hover td { background: var(--primary-light); }
+    .table-pro tbody td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .table-pro tbody tr:last-child td { border-bottom: none; }
+    .table-pro tbody tr:nth-child(even) td { background: #fafbfc; }
+    .table-wrapper {
+      border-radius: var(--radius);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow);
+      margin-bottom: 32px;
+    }
+
+    /* ═══════════════════════════════════════
+       MATCHING SCORE BAR
+    ═══════════════════════════════════════ */
+    .match-bar-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+    .match-bar-label {
+      width: 200px;
+      font-size: 14px;
+      font-weight: 500;
+      flex-shrink: 0;
+    }
+    .match-bar-track {
+      flex: 1;
+      height: 10px;
+      background: var(--bg-alt);
+      border-radius: 100px;
+      overflow: hidden;
+    }
+    .match-bar-fill {
+      height: 100%;
+      border-radius: 100px;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      transition: width 1s ease;
+    }
+    .match-bar-pct {
+      width: 40px;
+      text-align: right;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--primary);
+    }
+
+    /* ═══════════════════════════════════════
+       TIMELINE
+    ═══════════════════════════════════════ */
+    .timeline {
+      position: relative;
+      padding-left: 32px;
+    }
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 11px; top: 0; bottom: 0;
+      width: 2px;
+      background: linear-gradient(to bottom, var(--primary), var(--accent));
+      border-radius: 2px;
+    }
+    .timeline-item {
+      position: relative;
+      margin-bottom: 32px;
+    }
+    .timeline-dot {
+      position: absolute;
+      left: -28px; top: 4px;
+      width: 20px; height: 20px;
+      background: var(--primary);
+      border: 3px solid var(--surface);
+      border-radius: 50%;
+      box-shadow: 0 0 0 2px var(--primary);
+    }
+    .timeline-item:last-child .timeline-dot { background: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+    .timeline-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 18px 22px;
+      box-shadow: var(--shadow);
+    }
+    .timeline-card .day-badge {
+      display: inline-block;
+      background: var(--primary-light);
+      color: var(--primary);
+      font-weight: 700;
+      font-size: 11px;
+      padding: 2px 10px;
+      border-radius: 100px;
+      margin-bottom: 6px;
+    }
+    .timeline-card h5 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 4px;
+    }
+    .timeline-card p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    /* ═══════════════════════════════════════
+       CODE BLOCKS
+    ═══════════════════════════════════════ */
+    .code-block {
+      background: var(--code-bg);
+      border-radius: var(--radius);
+      overflow: hidden;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-lg);
+    }
+    .code-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 16px;
+      background: rgba(255,255,255,.06);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+    }
+    .code-dots { display: flex; gap: 6px; }
+    .code-dots span {
+      width: 11px; height: 11px; border-radius: 50%;
+    }
+    .code-dots span:nth-child(1) { background: #ff5f57; }
+    .code-dots span:nth-child(2) { background: #febc2e; }
+    .code-dots span:nth-child(3) { background: #28c840; }
+    .code-lang {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      color: rgba(255,255,255,.4);
+    }
+    .code-body {
+      padding: 20px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--code-text);
+      overflow-x: auto;
+      white-space: pre;
+    }
+    .code-body .cmd { color: #93c5fd; }
+    .code-body .cmt { color: #6b7280; }
+    .code-body .str { color: #a7f3d0; }
+    .code-body .kw  { color: #c084fc; }
+
+    /* ═══════════════════════════════════════
+       STEP CARDS (installation)
+    ═══════════════════════════════════════ */
+    .step-card {
+      display: flex;
+      gap: 20px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow);
+      transition: box-shadow .2s;
+    }
+    .step-card:hover { box-shadow: var(--shadow-lg); }
+    .step-num {
+      width: 36px; height: 36px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: #fff;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800;
+      font-size: 14px;
+      flex-shrink: 0;
+    }
+    .step-content h5 { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 4px; }
+    .step-content p  { font-size: 14px; color: var(--text-muted); margin: 0; }
+
+    /* ═══════════════════════════════════════
+       APP MODULE CARDS
+    ═══════════════════════════════════════ */
+    .module-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 24px;
+      height: 100%;
+      border-top: 3px solid var(--primary);
+    }
+    .module-card.green-top  { border-top-color: var(--accent); }
+    .module-card.amber-top  { border-top-color: var(--warning); }
+    .module-card.purple-top { border-top-color: #7c3aed; }
+    .module-card.red-top    { border-top-color: #ef4444; }
+    .module-card.teal-top   { border-top-color: #0d9488; }
+    .module-card h5 {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--navy);
+      margin-bottom: 6px;
+    }
+    .module-card p {
+      font-size: 13.5px;
+      color: var(--text-muted);
+      margin: 0;
+    }
+
+    /* ═══════════════════════════════════════
+       CALLOUT BOXES
+    ═══════════════════════════════════════ */
+    .callout {
+      border-left: 4px solid var(--primary);
+      background: var(--primary-light);
+      border-radius: 0 var(--radius) var(--radius) 0;
+      padding: 18px 22px;
+      margin-bottom: 24px;
+    }
+    .callout.green { border-color: var(--accent); background: var(--accent-light); }
+    .callout.amber { border-color: var(--warning); background: #fef3c7; }
+    .callout p { margin: 0; font-size: 14.5px; }
+
+    /* ═══════════════════════════════════════
+       TECH BADGE
+    ═══════════════════════════════════════ */
+    .tech-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 9px 16px;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--navy);
+      margin: 5px;
+      box-shadow: var(--shadow);
+    }
+    .tech-badge i { font-size: 17px; }
+
+    /* ═══════════════════════════════════════
+       MEMBER CARD
+    ═══════════════════════════════════════ */
+    .member-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px 20px;
+      text-align: center;
+      box-shadow: var(--shadow);
+      transition: all .2s;
+    }
+    .member-card:hover { box-shadow: var(--shadow-lg); transform: translateY(-3px); }
+    .member-avatar {
+      width: 64px; height: 64px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      color: #fff;
+      font-weight: 800;
+      margin: 0 auto 14px;
+    }
+    .member-name { font-weight: 700; font-size: 14px; color: var(--navy); margin-bottom: 4px; }
+    .member-role { font-size: 12.5px; color: var(--text-muted); line-height: 1.5; }
+
+    /* ═══════════════════════════════════════
+       SCREENSHOT PLACEHOLDER
+    ═══════════════════════════════════════ */
+    .screenshot-placeholder {
+      background: linear-gradient(135deg, var(--bg-alt), var(--border));
+      border: 2px dashed var(--border);
+      border-radius: var(--radius);
+      height: 220px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      color: var(--text-light);
+    }
+    .screenshot-placeholder i { font-size: 36px; }
+    .screenshot-placeholder span { font-size: 13px; font-weight: 500; }
+
+    /* ═══════════════════════════════════════
+       ERROR CARD
+    ═══════════════════════════════════════ */
+    .error-card {
+      background: #fff8f8;
+      border: 1px solid #fecaca;
+      border-radius: var(--radius);
+      padding: 20px 22px;
+      margin-bottom: 16px;
+    }
+    .error-card .err-title {
+      display: flex; align-items: center; gap: 8px;
+      font-weight: 700; color: #dc2626; font-size: 14px; margin-bottom: 6px;
+    }
+    .error-card .err-body { font-size: 13.5px; color: var(--text-muted); }
+    .error-card .err-fix {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid #fecaca;
+      font-size: 13px;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    /* ═══════════════════════════════════════
+       PAGE NAVIGATION BOTTOM
+    ═══════════════════════════════════════ */
+    .page-nav-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 64px;
+      padding-top: 28px;
+      border-top: 1px solid var(--border);
+    }
+    .btn-nav {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      border-radius: 100px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text);
+      transition: all .2s;
+      text-decoration: none;
+    }
+    .btn-nav:hover { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .btn-nav.primary { background: var(--primary); color: #fff; border-color: var(--primary); }
+    .btn-nav.primary:hover { background: var(--primary-dark); border-color: var(--primary-dark); }
+
+    /* ═══════════════════════════════════════
+       FOOTER
+    ═══════════════════════════════════════ */
+    .site-footer {
+      background: var(--navy);
+      color: rgba(255,255,255,.55);
+      padding: 32px;
+      text-align: center;
+      font-size: 13px;
+      margin-top: 0;
+    }
+    .site-footer strong { color: rgba(255,255,255,.85); }
+
+    /* ═══════════════════════════════════════
+       STAT CARDS
+    ═══════════════════════════════════════ */
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px;
+      text-align: center;
+      box-shadow: var(--shadow);
+    }
+    .stat-card .stat-num {
+      font-family: 'Playfair Display', serif;
+      font-size: 36px;
+      font-weight: 800;
+      color: var(--primary);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stat-card .stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* ═══════════════════════════════════════
+       FILE TREE
+    ═══════════════════════════════════════ */
+    .file-tree {
+      background: var(--code-bg);
+      border-radius: var(--radius);
+      padding: 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.9;
+      color: var(--code-text);
+      box-shadow: var(--shadow-lg);
+    }
+    .file-tree .dir  { color: #93c5fd; font-weight: 600; }
+    .file-tree .file { color: #d1d5db; }
+    .file-tree .tree { color: #4b5563; }
+
+    /* ═══════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════ */
+    @media (max-width: 640px) {
+      .cover-meta-item { min-width: 120px; }
+      .section-hero { padding: 32px 24px; }
+      .page-wrapper { padding: 28px 16px 60px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════
+     PAGE 0 — COVER (always visible first)
+══════════════════════════════════════════════ -->
+<div id="page-cover" class="page active">
+  <div class="cover-content">
+    <div class="cover-badge">
+      <i class="bi bi-mortarboard-fill"></i>
+      Projet Intégrateur — Licence 1 · IFRI
+    </div>
+
+    <div class="cover-logo">
+      <i class="bi bi-people-fill"></i>
+    </div>
+
+    <div class="cover-title">IFRI MentorLink</div>
+    <div class="cover-subtitle">Plateforme web intelligente de mentorat étudiant</div>
+
+    <div class="cover-meta">
+      <div class="cover-meta-item">
+        <div class="label">Groupe</div>
+        <div class="value">Groupe_03</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="label">Dépôt GitHub</div>
+        <div class="value">PIL1_2526_03</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="label">Année académique</div>
+        <div class="value">2025 – 2026</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="label">Supervision</div>
+        <div class="value">M. Ratheil HOUNDJI</div>
+      </div>
+      <div class="cover-meta-item">
+        <div class="label">Encadrants</div>
+        <div class="value">M. ACCROMBESSI · Mme GAHOU</div>
+      </div>
+    </div>
+
+    <button class="btn-start" onclick="showPage(1)">
+      <i class="bi bi-book-open"></i>
+      Commencer la lecture
+    </button>
+  </div>
+
+  <div class="cover-footer">
+    <span><strong>IFRI MentorLink</strong> — Rapport Final de Projet</span>
+    <span>Django · PostgreSQL · Bootstrap · JavaScript</span>
+    <span>2025 – 2026</span>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     NAVIGATION BAR (content pages)
+══════════════════════════════════════════════ -->
+<nav id="main-nav" style="display:none;">
+  <div class="nav-inner">
+    <a class="nav-brand" href="#" onclick="showPage(0); return false;">
+      <div class="dot"><i class="bi bi-people-fill"></i></div>
+      IFRI MentorLink
+    </a>
+    <ul class="nav-pages">
+      <li><a onclick="showPage(1)" id="nav-1">Présentation</a></li>
+      <li><a onclick="showPage(2)" id="nav-2">Équipe &amp; Organisation</a></li>
+      <li><a onclick="showPage(3)" id="nav-3">Architecture</a></li>
+      <li><a onclick="showPage(4)" id="nav-4">Fonctionnalités</a></li>
+      <li><a onclick="showPage(5)" id="nav-5">Installation</a></li>
+      <li><a onclick="showPage(6)" id="nav-6">Bilan &amp; Conclusion</a></li>
+    </ul>
+    <button class="btn-nav nav-mobile-btn" onclick="toggleMobileNav()">
+      <i class="bi bi-list"></i>
+    </button>
+  </div>
+  <!-- Mobile menu -->
+  <div id="mobile-menu" style="display:none; background:#fff; padding:12px 24px; border-top:1px solid var(--border);">
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <a style="padding:8px 0; cursor:pointer; color:var(--text); font-weight:500;" onclick="showPage(1); toggleMobileNav()">Présentation</a>
+      <a style="padding:8px 0; cursor:pointer; color:var(--text); font-weight:500;" onclick="showPage(2); toggleMobileNav()">Équipe &amp; Organisation</a>
+      <a style="padding:8px 0; cursor:pointer; color:var(--text); font-weight:500;" onclick="showPage(3); toggleMobileNav()">Architecture</a>
+      <a style="padding:8px 0; cursor:pointer; color:var(--text); font-weight:500;" onclick="showPage(4); toggleMobileNav()">Fonctionnalités</a>
+      <a style="padding:8px 0; cursor:pointer; color:var(--text); font-weight:500;" onclick="showPage(5); toggleMobileNav()">Installation</a>
+      <a style="padding:8px 0; cursor:pointer; color:var(--text); font-weight:500;" onclick="showPage(6); toggleMobileNav()">Bilan &amp; Conclusion</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ══════════════════════════════════════════════
+     PAGE 1 — PRÉSENTATION DU PROJET
+══════════════════════════════════════════════ -->
+<div id="page-1" class="page">
+  <div class="page-wrapper">
+
+    <!-- Hero -->
+    <div class="section-hero">
+      <div class="chapter-num">Chapitre 01</div>
+      <h1>Présentation du Projet</h1>
+      <p>Contexte, problématique, objectifs et technologies au cœur d'IFRI MentorLink.</p>
+    </div>
+
+    <!-- Stats rapides -->
+    <div class="row g-3 mb-5">
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-num">7</div>
+          <div class="stat-label">Modules Django</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-num">6</div>
+          <div class="stat-label">Membres d'équipe</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-num">10</div>
+          <div class="stat-label">Jours de développement</div>
+        </div>
+      </div>
+      <div class="col-6 col-md-3">
+        <div class="stat-card">
+          <div class="stat-num">7+</div>
+          <div class="stat-label">Fonctionnalités clés</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Introduction -->
+    <div class="mb-5">
+      <h2 class="section-title mb-2">Introduction</h2>
+      <p class="lead-text">
+        Dans le cadre du projet intégrateur de première année de licence à l'IFRI, notre groupe a développé une plateforme web nommée <strong>IFRI MentorLink</strong>. Cette application facilite la mise en relation entre étudiants mentors et étudiants mentorés, favorisant l'entraide académique et professionnelle au sein de l'IFRI.
+      </p>
+      <p class="lead-text">
+        Le projet répond directement au cahier des charges fourni par les encadreurs et s'inscrit dans une démarche complète de développement logiciel, réalisé dans un délai court de <strong>dix jours</strong>, nécessitant une forte coordination entre les membres du groupe.
+      </p>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Problématique -->
+    <div class="mb-5">
+      <h2 class="section-title mb-3">Contexte &amp; Problématique</h2>
+      <div class="callout amber mb-4">
+        <p><i class="bi bi-exclamation-triangle-fill me-2"></i>
+          À l'IFRI, de nombreux étudiants possèdent des compétences solides dans certaines matières, tandis que d'autres rencontrent des difficultés dans ces mêmes domaines — sans système structuré pour les mettre en relation.</p>
+      </div>
+
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="card-custom">
+            <div class="card-icon red"><i class="bi bi-x-circle-fill"></i></div>
+            <h3 class="subsection-title">Problèmes identifiés</h3>
+            <ul style="font-size:14px; color:var(--text-muted); padding-left:18px; margin:0;">
+              <li>Pas de système pour identifier les étudiants compétents</li>
+              <li>Difficulté à trouver un mentor rapidement</li>
+              <li>Pas de gestion centralisée des disponibilités</li>
+              <li>Communication difficile entre pairs</li>
+              <li>Aucune centralisation des offres et demandes de mentorat</li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-custom">
+            <div class="card-icon green"><i class="bi bi-check-circle-fill"></i></div>
+            <h3 class="subsection-title">Solutions apportées</h3>
+            <ul style="font-size:14px; color:var(--text-muted); padding-left:18px; margin:0;">
+              <li>Création de profils étudiants détaillés</li>
+              <li>Publication d'offres et demandes de mentorat</li>
+              <li>Matching automatique par score de compatibilité</li>
+              <li>Messagerie intégrée entre utilisateurs</li>
+              <li>Système de notifications en temps réel</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Objectifs -->
+    <div class="mb-5">
+      <h2 class="section-title mb-3">Objectifs du Projet</h2>
+      <div class="callout green mb-4">
+        <p><strong>Objectif général :</strong> Développer une plateforme web de mentorat étudiant permettant la mise en relation intelligente entre mentors et mentorés.</p>
+      </div>
+      <div class="row g-3">
+        <div class="col-md-4"><div class="card-custom">
+          <div class="card-icon blue"><i class="bi bi-person-check"></i></div>
+          <h3 class="subsection-title">Authentification</h3>
+          <p style="font-size:13.5px;color:var(--text-muted)">Inscription, connexion et réinitialisation de mot de passe sécurisés.</p>
+        </div></div>
+        <div class="col-md-4"><div class="card-custom">
+          <div class="card-icon green"><i class="bi bi-diagram-3"></i></div>
+          <h3 class="subsection-title">Matching intelligent</h3>
+          <p style="font-size:13.5px;color:var(--text-muted)">Calcul automatique d'un score de compatibilité multi-critères.</p>
+        </div></div>
+        <div class="col-md-4"><div class="card-custom">
+          <div class="card-icon purple"><i class="bi bi-chat-dots"></i></div>
+          <h3 class="subsection-title">Messagerie</h3>
+          <p style="font-size:13.5px;color:var(--text-muted)">Communication directe entre mentors et mentorés via la plateforme.</p>
+        </div></div>
+        <div class="col-md-4"><div class="card-custom">
+          <div class="card-icon amber"><i class="bi bi-card-list"></i></div>
+          <h3 class="subsection-title">Offres &amp; Demandes</h3>
+          <p style="font-size:13.5px;color:var(--text-muted)">Publication et consultation des publications de mentorat.</p>
+        </div></div>
+        <div class="col-md-4"><div class="card-custom">
+          <div class="card-icon teal"><i class="bi bi-phone"></i></div>
+          <h3 class="subsection-title">Interface moderne</h3>
+          <p style="font-size:13.5px;color:var(--text-muted)">UI responsive, intuitive et fluide basée sur Bootstrap.</p>
+        </div></div>
+        <div class="col-md-4"><div class="card-custom">
+          <div class="card-icon red"><i class="bi bi-boxes"></i></div>
+          <h3 class="subsection-title">Architecture modulaire</h3>
+          <p style="font-size:13.5px;color:var(--text-muted)">Projet Django extensible et maintenable à long terme.</p>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Technologies -->
+    <div class="mb-5">
+      <h2 class="section-title mb-3">Technologies Utilisées</h2>
+      <div class="row g-4">
+        <div class="col-md-3">
+          <div class="card-custom">
+            <div class="card-icon blue mb-2"><i class="bi bi-layout-text-window"></i></div>
+            <h3 class="subsection-title">Frontend</h3>
+            <div>
+              <span class="label-pill" style="background:#fee2e2;color:#dc2626;">HTML5</span>
+              <span class="label-pill ms-1" style="background:#dbeafe;color:#1d4ed8;">CSS3</span>
+              <span class="label-pill ms-1" style="background:#ede9fe;color:#7c3aed;">Bootstrap</span>
+              <span class="label-pill ms-1" style="background:#fef3c7;color:#d97706;">JavaScript</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card-custom">
+            <div class="card-icon green mb-2"><i class="bi bi-server"></i></div>
+            <h3 class="subsection-title">Backend</h3>
+            <div>
+              <span class="label-pill" style="background:#dcfce7;color:#16a34a;">Python</span>
+              <span class="label-pill ms-1" style="background:#d1fae5;color:#065f46;">Django</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card-custom">
+            <div class="card-icon amber mb-2"><i class="bi bi-database"></i></div>
+            <h3 class="subsection-title">Base de données</h3>
+            <div>
+              <span class="label-pill" style="background:#fef3c7;color:#d97706;">PostgreSQL</span>
+              <span class="label-pill ms-1" style="background:#fff;color:#64748b;border:1px solid #e2e8f0;">SQL</span>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card-custom">
+            <div class="card-icon teal mb-2"><i class="bi bi-tools"></i></div>
+            <h3 class="subsection-title">Outils</h3>
+            <div>
+              <span class="label-pill" style="background:#f1f5f9;color:#334155;">Git</span>
+              <span class="label-pill ms-1" style="background:#f1f5f9;color:#334155;">GitHub</span>
+              <span class="label-pill ms-1" style="background:#f1f5f9;color:#334155;">VS Code</span>
+              <span class="label-pill ms-1" style="background:#f1f5f9;color:#334155;">pgAdmin</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="page-nav-bar">
+      <button class="btn-nav" onclick="showPage(0)"><i class="bi bi-house"></i> Accueil</button>
+      <button class="btn-nav primary" onclick="showPage(2)">Équipe &amp; Organisation <i class="bi bi-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <strong>IFRI MentorLink</strong> · Groupe_03 · PIL1_2526_03 · IFRI · 2025–2026
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PAGE 2 — ÉQUIPE & ORGANISATION
+══════════════════════════════════════════════ -->
+<div id="page-2" class="page">
+  <div class="page-wrapper">
+
+    <div class="section-hero">
+      <div class="chapter-num">Chapitre 02</div>
+      <h1>Équipe &amp; Organisation</h1>
+      <p>Composition du groupe, répartition des rôles, méthodologie de travail et gestion collaborative avec GitHub.</p>
+    </div>
+
+    <!-- Membres -->
+    <div class="mb-5">
+      <h2 class="section-title mb-4">Membres du Groupe</h2>
+      <div class="row g-3">
+        <div class="col-6 col-md-4">
+          <div class="member-card">
+            <div class="member-avatar">SA</div>
+            <div class="member-name">Stane Aniambossou</div>
+            <div class="member-role">Chef d'équipe · Coordination · Architecture · Intégration</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4">
+          <div class="member-card">
+            <div class="member-avatar">NY</div>
+            <div class="member-name">NATTA YORI Alexandre</div>
+            <div class="member-role">Backend Django · Logique métier · API</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4">
+          <div class="member-card">
+            <div class="member-avatar">AM</div>
+            <div class="member-name">ANICLE Marco</div>
+            <div class="member-role">Frontend Authentification · Connexion · Inscription</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4">
+          <div class="member-card">
+            <div class="member-avatar">CS</div>
+            <div class="member-name">CHOUBADE Samadh</div>
+            <div class="member-role">Dashboard · Profil · Sidebar · Navbar</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4">
+          <div class="member-card">
+            <div class="member-avatar">OB</div>
+            <div class="member-name">OGOUGBE Babatundé</div>
+            <div class="member-role">Frontend Mentorat · Offres &amp; Demandes · Validation</div>
+          </div>
+        </div>
+        <div class="col-6 col-md-4">
+          <div class="member-card">
+            <div class="member-avatar">GD</div>
+            <div class="member-name">GUEDOU Deo-Gratias T.</div>
+            <div class="member-role">Documentation · Comptes-rendus · Suivi administratif</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Table des rôles détaillés -->
+    <div class="mb-5">
+      <h2 class="section-title mb-4">Répartition Détaillée des Rôles</h2>
+      <div class="table-wrapper">
+        <table class="table-pro">
+          <thead>
+            <tr>
+              <th>Membre</th>
+              <th>Responsabilités principales</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Stane Aniambossou</strong><br><small class="text-muted">Chef d'équipe</small></td>
+              <td>Coordination générale, architecture globale, organisation des réunions, gestion GitHub, intégration frontend/backend, documentation, résolution des conflits Git, validation finale</td>
+            </tr>
+            <tr>
+              <td><strong>NATTA YORI Alexandre</strong><br><small class="text-muted">Backend Lead</small></td>
+              <td>Développement backend Django, modèles de données, authentification, algorithme de matching, logique métier, API internes, notifications, messagerie backend</td>
+            </tr>
+            <tr>
+              <td><strong>ANICLE Marco</strong><br><small class="text-muted">Frontend Auth</small></td>
+              <td>Développement frontend des pages d'authentification, interfaces de connexion, inscription, réinitialisation de mot de passe</td>
+            </tr>
+            <tr>
+              <td><strong>CHOUBADE Samadh</strong><br><small class="text-muted">Frontend Dashboard</small></td>
+              <td>Développement du dashboard, profil utilisateur, sidebar, navbar et composants frontend réutilisables</td>
+            </tr>
+            <tr>
+              <td><strong>OGOUGBE Babatundé</strong><br><small class="text-muted">Frontend Mentorat</small></td>
+              <td>Développement frontend du module mentorat, interfaces offres et demandes, validation technique des composants</td>
+            </tr>
+            <tr>
+              <td><strong>GUEDOU Deo-Gratias T.</strong><br><small class="text-muted">Documentation</small></td>
+              <td>Documentation technique, organisation documentaire, comptes-rendus de réunions, suivi administratif du projet</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Méthodologie -->
+    <div class="mb-5">
+      <h2 class="section-title mb-4">Méthodologie de Travail</h2>
+      <div class="callout mb-4">
+        <p><i class="bi bi-clock-fill me-2"></i>
+          <strong>Réunions quotidiennes à 18h30</strong> — évaluation de l'avancement, identification des blocages, répartition des nouvelles tâches et coordination technique.</p>
+      </div>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-card">
+            <div class="day-badge">Phase 1</div>
+            <h5>Conception &amp; Planification</h5>
+            <p>Définition de l'architecture, répartition des rôles, mise en place du dépôt GitHub, création des branches de travail.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-card">
+            <div class="day-badge">Phase 2</div>
+            <h5>Développement Parallèle</h5>
+            <p>Développement simultané : backend Django (modèles, vues, API) et frontend (templates Bootstrap, pages statiques). Commits réguliers.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-card">
+            <div class="day-badge">Phase 3</div>
+            <h5>Intégration Frontend / Backend</h5>
+            <p>Connexion des templates Django, adaptation des routes, correction des chemins statiques, tests collectifs d'intégration.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-card">
+            <div class="day-badge">Phase 4</div>
+            <h5>Tests &amp; Livraison</h5>
+            <p>Tests fonctionnels, résolution des erreurs finales, validation de l'ensemble des fonctionnalités, documentation finale.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- GitHub -->
+    <div class="mb-5">
+      <h2 class="section-title mb-4">Gestion Collaborative avec GitHub</h2>
+      <div class="row g-3 mb-4">
+        <div class="col-md-6">
+          <div class="card-custom">
+            <div class="card-icon blue"><i class="bi bi-git"></i></div>
+            <h3 class="subsection-title">Branches principales</h3>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:13px; line-height:2;">
+              <div><span style="color:var(--accent);">●</span> <strong>main</strong> — branche de production</div>
+              <div><span style="color:var(--primary);">●</span> <strong>develop</strong> — intégration continue</div>
+              <div><span style="color:var(--warning);">●</span> <strong>feature/integration-frontend-backend</strong></div>
+              <div><span style="color:var(--text-light);">●</span> Branches spécifiques par membre</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-custom">
+            <div class="card-icon green"><i class="bi bi-arrow-repeat"></i></div>
+            <h3 class="subsection-title">Workflow Git adopté</h3>
+            <ol style="font-size:13.5px; color:var(--text-muted); padding-left:18px; margin:0; line-height:2;">
+              <li>Création d'une branche spécifique</li>
+              <li>Développement individuel</li>
+              <li>Commits réguliers &amp; descriptifs</li>
+              <li>Push sur GitHub</li>
+              <li>Fusion progressive vers develop</li>
+              <li>Tests collectifs &amp; merge vers main</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+      <div class="callout green">
+        <p><i class="bi bi-check-circle-fill me-2"></i>
+          Cette approche a permis de <strong>limiter les conflits</strong>, d'assurer la <strong>traçabilité du code</strong>, d'améliorer la <strong>collaboration</strong> et de protéger la branche principale.</p>
+      </div>
+    </div>
+
+    <div class="page-nav-bar">
+      <button class="btn-nav" onclick="showPage(1)"><i class="bi bi-arrow-left"></i> Présentation</button>
+      <button class="btn-nav primary" onclick="showPage(3)">Architecture <i class="bi bi-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <strong>IFRI MentorLink</strong> · Groupe_03 · PIL1_2526_03 · IFRI · 2025–2026
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PAGE 3 — ARCHITECTURE DU PROJET
+══════════════════════════════════════════════ -->
+<div id="page-3" class="page">
+  <div class="page-wrapper">
+
+    <div class="section-hero">
+      <div class="chapter-num">Chapitre 03</div>
+      <h1>Architecture du Projet</h1>
+      <p>Structure Django modulaire, organisation des applications, base de données et arborescence du projet.</p>
+    </div>
+
+    <!-- Architecture générale -->
+    <div class="mb-5">
+      <h2 class="section-title mb-3">Architecture Logicielle</h2>
+      <p class="lead-text">Le projet suit une architecture <strong>client / serveur</strong> modulaire et extensible, organisée autour de plusieurs applications Django indépendantes, chacune responsable d'un domaine fonctionnel précis.</p>
+
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <div class="card-custom text-center">
+            <div class="card-icon blue mx-auto"><i class="bi bi-display"></i></div>
+            <h3 class="subsection-title">Client (Navigateur)</h3>
+            <p style="font-size:13.5px;color:var(--text-muted)">HTML5 · CSS3 · Bootstrap 5 · JavaScript · Templates Django</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card-custom text-center">
+            <div class="card-icon green mx-auto"><i class="bi bi-server"></i></div>
+            <h3 class="subsection-title">Serveur Django</h3>
+            <p style="font-size:13.5px;color:var(--text-muted)">Python 3.11+ · Django · Vues · Modèles · Templates · Formulaires</p>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card-custom text-center">
+            <div class="card-icon amber mx-auto"><i class="bi bi-database"></i></div>
+            <h3 class="subsection-title">Base de données</h3>
+            <p style="font-size:13.5px;color:var(--text-muted)">PostgreSQL · psycopg2 · ORM Django · mentorlink.sql</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Applications Django -->
+    <div class="mb-5">
+      <h2 class="section-title mb-4">Applications Django</h2>
+      <div class="table-wrapper mb-4">
+        <table class="table-pro">
+          <thead>
+            <tr>
+              <th>Application</th>
+              <th>Rôle</th>
+              <th>Technologies clés</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><code style="background:#f1f5f9;padding:2px 8px;border-radius:5px;">accounts</code></td>
+              <td>Authentification et gestion des utilisateurs</td>
+              <td><span class="label-pill" style="background:var(--primary-light);color:var(--primary);">Django Auth</span></td>
+            </tr>
+            <tr>
+              <td><code style="background:#f1f5f9;padding:2px 8px;border-radius:5px;">publications</code></td>
+              <td>Offres et demandes de mentorat</td>
+              <td><span class="label-pill" style="background:#dcfce7;color:#16a34a;">Models + Views</span></td>
+            </tr>
+            <tr>
+              <td><code style="background:#f1f5f9;padding:2px 8px;border-radius:5px;">matching</code></td>
+              <td>Algorithme de matching intelligent</td>
+              <td><span class="label-pill" style="background:#ede9fe;color:#7c3aed;">Score Engine</span></td>
+            </tr>
+            <tr>
+              <td><code style="background:#f1f5f9;padding:2px 8px;border-radius:5px;">mentorat</code></td>
+              <td>Gestion des relations de mentorat</td>
+              <td><span class="label-pill" style="background:#fef3c7;color:#d97706;">Business Logic</span></td>
+            </tr>
+            <tr>
+              <td><code style="background:#f1f5f9;padding:2px 8px;border-radius:5px;">messaging</code></td>
+              <td>Messagerie entre utilisateurs</td>
+              <td><span class="label-pill" style="background:#ccfbf1;color:#0d9488;">Channels</span></td>
+            </tr>
+            <tr>
+              <td><code style="background:#f1f5f9;padding:2px 8px;border-radius:5px;">notifications</code></td>
+              <td>Gestion des alertes et notifications</td>
+              <td><span class="label-pill" style="background:#fee2e2;color:#dc2626;">Signals</span></td>
+            </tr>
+            <tr>
+              <td><code style="background:#f1f5f9;padding:2px 8px;border-radius:5px;">core</code></td>
+              <td>Dashboard et pages principales</td>
+              <td><span class="label-pill" style="background:#f1f5f9;color:#475569;">Base App</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Structure dossiers -->
+    <div class="mb-5">
+      <h2 class="section-title mb-4">Structure du Backend</h2>
+      <div class="file-tree">
+<span class="dir">backend/</span>
+<span class="tree">│</span>
+<span class="tree">├── </span><span class="dir">accounts/</span>         <span class="cmt">  # Auth &amp; utilisateurs</span>
+<span class="tree">├── </span><span class="dir">core/</span>             <span class="cmt">  # Dashboard &amp; pages principales</span>
+<span class="tree">├── </span><span class="dir">publications/</span>     <span class="cmt">  # Offres &amp; demandes</span>
+<span class="tree">├── </span><span class="dir">matching/</span>         <span class="cmt">  # Algorithme de matching</span>
+<span class="tree">├── </span><span class="dir">mentorat/</span>         <span class="cmt">  # Gestion du mentorat</span>
+<span class="tree">├── </span><span class="dir">messaging/</span>        <span class="cmt">  # Messagerie</span>
+<span class="tree">├── </span><span class="dir">notifications/</span>    <span class="cmt">  # Notifications</span>
+<span class="tree">├── </span><span class="dir">templates/</span>        <span class="cmt">  # Templates HTML Django</span>
+<span class="tree">├── </span><span class="dir">static/</span>           <span class="cmt">  # CSS, JS, images</span>
+<span class="tree">├── </span><span class="dir">media/</span>            <span class="cmt">  # Fichiers uploadés</span>
+<span class="tree">├── </span><span class="file">manage.py</span>
+<span class="tree">└── </span><span class="file">requirements.txt</span>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Base de données -->
+    <div class="mb-5">
+      <h2 class="section-title mb-4">Base de Données</h2>
+      <p class="lead-text">Le projet utilise <strong>PostgreSQL</strong> comme système de gestion de base de données relationnelle. Le fichier <code>mentorlink.sql</code> contient la structure complète des tables, les relations et contraintes d'intégrité.</p>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="card-custom">
+            <div class="card-icon amber"><i class="bi bi-database-fill"></i></div>
+            <h3 class="subsection-title">Configuration PostgreSQL</h3>
+            <div style="font-family:'JetBrains Mono',monospace; font-size:12.5px; line-height:1.9; color:var(--text-muted);">
+              <div><strong>DB_NAME</strong>    : mentorlink_db</div>
+              <div><strong>DB_USER</strong>    : postgres</div>
+              <div><strong>DB_HOST</strong>    : localhost</div>
+              <div><strong>DB_PORT</strong>    : 5432</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-custom">
+            <div class="card-icon green"><i class="bi bi-file-earmark-code"></i></div>
+            <h3 class="subsection-title">Fichier SQL</h3>
+            <p style="font-size:14px;color:var(--text-muted)">Le fichier <code>mentorlink.sql</code> contient :</p>
+            <ul style="font-size:13.5px;color:var(--text-muted);padding-left:18px;">
+              <li>Structure des tables</li>
+              <li>Relations entre entités</li>
+              <li>Contraintes SQL (clés étrangères, unicité)</li>
+              <li>Données initiales nécessaires</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Captures (placeholders) -->
+    <div class="mb-5">
+      <h2 class="section-title mb-4">Aperçu des Interfaces</h2>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="screenshot-placeholder">
+            <i class="bi bi-grid-1x2"></i>
+            <span>Dashboard principal</span>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="screenshot-placeholder">
+            <i class="bi bi-person-badge"></i>
+            <span>Page de profil</span>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="screenshot-placeholder">
+            <i class="bi bi-diagram-3"></i>
+            <span>Module de matching</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-nav-bar">
+      <button class="btn-nav" onclick="showPage(2)"><i class="bi bi-arrow-left"></i> Équipe</button>
+      <button class="btn-nav primary" onclick="showPage(4)">Fonctionnalités <i class="bi bi-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <strong>IFRI MentorLink</strong> · Groupe_03 · PIL1_2526_03 · IFRI · 2025–2026
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PAGE 4 — FONCTIONNALITÉS
+══════════════════════════════════════════════ -->
+<div id="page-4" class="page">
+  <div class="page-wrapper">
+
+    <div class="section-hero">
+      <div class="chapter-num">Chapitre 04</div>
+      <h1>Fonctionnalités Réalisées</h1>
+      <p>Présentation détaillée de chaque module implémenté dans la plateforme IFRI MentorLink.</p>
+    </div>
+
+    <!-- F1 — Auth -->
+    <div class="mb-5">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="card-icon blue" style="margin-bottom:0;"><i class="bi bi-shield-lock-fill"></i></div>
+        <h2 class="section-title mb-0">1. Authentification</h2>
+      </div>
+      <p class="lead-text">Le système d'authentification est sécurisé grâce à Django. Les mots de passe sont <strong>hashés automatiquement</strong>.</p>
+      <div class="row g-3">
+        <div class="col-md-3"><div class="card-custom text-center">
+          <i class="bi bi-person-plus-fill" style="font-size:28px;color:var(--primary);margin-bottom:8px;display:block;"></i>
+          <strong style="font-size:14px;">Inscription</strong>
+        </div></div>
+        <div class="col-md-3"><div class="card-custom text-center">
+          <i class="bi bi-box-arrow-in-right" style="font-size:28px;color:var(--accent);margin-bottom:8px;display:block;"></i>
+          <strong style="font-size:14px;">Connexion</strong>
+        </div></div>
+        <div class="col-md-3"><div class="card-custom text-center">
+          <i class="bi bi-key-fill" style="font-size:28px;color:var(--warning);margin-bottom:8px;display:block;"></i>
+          <strong style="font-size:14px;">Réinitialisation</strong>
+        </div></div>
+        <div class="col-md-3"><div class="card-custom text-center">
+          <i class="bi bi-lock-fill" style="font-size:28px;color:#7c3aed;margin-bottom:8px;display:block;"></i>
+          <strong style="font-size:14px;">Sécurisation</strong>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- F2 — Profils -->
+    <div class="mb-5">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="card-icon green" style="margin-bottom:0;"><i class="bi bi-person-circle"></i></div>
+        <h2 class="section-title mb-0">2. Gestion des Profils</h2>
+      </div>
+      <p class="lead-text">Chaque utilisateur dispose d'un profil riche et modifiable à tout moment.</p>
+      <div class="table-wrapper">
+        <table class="table-pro">
+          <thead>
+            <tr><th>Champ</th><th>Description</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Nom &amp; Prénom</td><td>Identité de l'étudiant</td></tr>
+            <tr><td>Email &amp; Téléphone</td><td>Coordonnées de contact</td></tr>
+            <tr><td>Filière &amp; Niveau</td><td>Contexte académique</td></tr>
+            <tr><td>Matières maîtrisées</td><td>Compétences pouvant être enseignées</td></tr>
+            <tr><td>Matières faibles</td><td>Domaines où un mentor est recherché</td></tr>
+            <tr><td>Disponibilités</td><td>Créneaux horaires disponibles</td></tr>
+            <tr><td>Bio &amp; Photo</td><td>Présentation personnelle</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- F3 — Offres et demandes -->
+    <div class="mb-5">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="card-icon amber" style="margin-bottom:0;"><i class="bi bi-card-list"></i></div>
+        <h2 class="section-title mb-0">3. Offres &amp; Demandes</h2>
+      </div>
+      <p class="lead-text">Les utilisateurs peuvent publier des offres (je propose du mentorat) ou des demandes (je cherche un mentor), en précisant matières, disponibilités et format.</p>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- F4 — Matching -->
+    <div class="mb-5">
+      <div class="d-flex align-items-center gap-3 mb-3">
+        <div class="card-icon purple" style="margin-bottom:0;"><i class="bi bi-diagram-3-fill"></i></div>
+        <h2 class="section-title mb-0">4. Système de Matching Intelligent</h2>
+      </div>
+      <p class="lead-text">Le matching constitue la <strong>fonctionnalité centrale</strong> du projet. Il calcule automatiquement un score de compatibilité entre utilisateurs selon une pondération multi-critères.</p>
+
+      <div class="card-custom mb-4">
+        <h3 class="subsection-title">Pondération du Score de Compatibilité</h3>
+        <div class="mt-3">
+          <div class="match-bar-row">
+            <div class="match-bar-label"><i class="bi bi-book me-2 text-primary"></i>Compatibilité matières</div>
+            <div class="match-bar-track"><div class="match-bar-fill" style="width:60%"></div></div>
+            <div class="match-bar-pct">60%</div>
+          </div>
+          <div class="match-bar-row">
+            <div class="match-bar-label"><i class="bi bi-clock me-2 text-success"></i>Disponibilités communes</div>
+            <div class="match-bar-track"><div class="match-bar-fill" style="width:20%"></div></div>
+            <div class="match-bar-pct">20%</div>
+          </div>
+          <div class="match-bar-row">
+            <div class="match-bar-label"><i class="bi bi-mortarboard me-2 text-warning"></i>Compatibilité filière</div>
+            <div class="match-bar-track"><div class="match-bar-fill" style="width:10%"></div></div>
+            <div class="match-bar-pct">10%</div>
+          </div>
+          <div class="match-bar-row">
+            <div class="match-bar-label"><i class="bi bi-bar-chart me-2 text-danger"></i>Compatibilité niveau</div>
+            <div class="match-bar-track"><div class="match-bar-fill" style="width:10%"></div></div>
+            <div class="match-bar-pct">10%</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout green">
+        <p><i class="bi bi-info-circle-fill me-2"></i>
+          Le résultat affiche : <strong>nom</strong>, <strong>photo</strong>, <strong>score de compatibilité</strong>, <strong>matières communes</strong> et <strong>disponibilités partagées</strong>.</p>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- F5-7 -->
+    <div class="mb-5">
+      <h2 class="section-title mb-4">5. Messagerie, Notifications &amp; Dashboard</h2>
+      <div class="row g-3">
+        <div class="col-md-4">
+          <div class="card-custom">
+            <div class="card-icon purple"><i class="bi bi-chat-text-fill"></i></div>
+            <h3 class="subsection-title">Messagerie</h3>
+            <ul style="font-size:13.5px;color:var(--text-muted);padding-left:18px;margin:0;">
+              <li>Envoi et réception de messages</li>
+              <li>Consultation des conversations</li>
+              <li>Historique des échanges</li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card-custom">
+            <div class="card-icon red"><i class="bi bi-bell-fill"></i></div>
+            <h3 class="subsection-title">Notifications</h3>
+            <ul style="font-size:13.5px;color:var(--text-muted);padding-left:18px;margin:0;">
+              <li>Alertes de nouveaux messages</li>
+              <li>Alertes d'interactions</li>
+              <li>Mises à jour de conversations</li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card-custom">
+            <div class="card-icon teal"><i class="bi bi-grid-fill"></i></div>
+            <h3 class="subsection-title">Dashboard</h3>
+            <ul style="font-size:13.5px;color:var(--text-muted);padding-left:18px;margin:0;">
+              <li>Accès rapide aux modules</li>
+              <li>Navigation intuitive</li>
+              <li>Statistiques utilisateur</li>
+              <li>Conversations récentes</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Captures -->
+    <div class="mb-5">
+      <h2 class="section-title mb-4">Captures d'Écran</h2>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="screenshot-placeholder" style="height:180px;">
+            <i class="bi bi-shield-lock"></i>
+            <span>Page d'inscription / connexion</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="screenshot-placeholder" style="height:180px;">
+            <i class="bi bi-diagram-3"></i>
+            <span>Résultats de matching</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="screenshot-placeholder" style="height:180px;">
+            <i class="bi bi-chat-dots"></i>
+            <span>Interface de messagerie</span>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="screenshot-placeholder" style="height:180px;">
+            <i class="bi bi-card-list"></i>
+            <span>Liste des offres &amp; demandes</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="page-nav-bar">
+      <button class="btn-nav" onclick="showPage(3)"><i class="bi bi-arrow-left"></i> Architecture</button>
+      <button class="btn-nav primary" onclick="showPage(5)">Guide d'installation <i class="bi bi-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <strong>IFRI MentorLink</strong> · Groupe_03 · PIL1_2526_03 · IFRI · 2025–2026
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PAGE 5 — GUIDE D'INSTALLATION
+══════════════════════════════════════════════ -->
+<div id="page-5" class="page">
+  <div class="page-wrapper">
+
+    <div class="section-hero">
+      <div class="chapter-num">Chapitre 05</div>
+      <h1>Guide d'Installation &amp; Déploiement</h1>
+      <p>Instructions complètes pour installer et lancer le projet IFRI MentorLink en environnement local.</p>
+    </div>
+
+    <!-- Prérequis -->
+    <div class="mb-5">
+      <h2 class="section-title mb-4">Prérequis</h2>
+      <div class="row g-3 mb-4">
+        <div class="col-md-4">
+          <div class="card-custom text-center">
+            <div class="card-icon green mx-auto"><i class="bi bi-filetype-py"></i></div>
+            <strong style="font-size:15px;display:block;margin-bottom:4px;">Python</strong>
+            <span style="font-size:13px;color:var(--text-muted);">Version 3.11 ou supérieure</span>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card-custom text-center">
+            <div class="card-icon amber mx-auto"><i class="bi bi-database-fill"></i></div>
+            <strong style="font-size:15px;display:block;margin-bottom:4px;">PostgreSQL</strong>
+            <span style="font-size:13px;color:var(--text-muted);">+ pgAdmin recommandé</span>
+          </div>
+        </div>
+        <div class="col-md-4">
+          <div class="card-custom text-center">
+            <div class="card-icon blue mx-auto"><i class="bi bi-git"></i></div>
+            <strong style="font-size:15px;display:block;margin-bottom:4px;">Git</strong>
+            <span style="font-size:13px;color:var(--text-muted);">Pour cloner le dépôt</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="code-block">
+        <div class="code-header">
+          <div class="code-dots"><span></span><span></span><span></span></div>
+          <div class="code-lang">bash — Vérification des installations</div>
+        </div>
+        <div class="code-body"><span class="cmt"># Vérifier Python</span>
+<span class="cmd">python --version</span>   <span class="cmt"># ou: py --version</span>
+
+<span class="cmt"># Vérifier Git</span>
+<span class="cmd">git --version</span>
+
+<span class="cmt"># Vérifier PostgreSQL</span>
+<span class="cmd">psql --version</span></div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Étapes d'installation -->
+    <div class="mb-5">
+      <h2 class="section-title mb-4">Étapes d'Installation</h2>
+
+      <!-- Étape 1 -->
+      <div class="step-card">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h5>Cloner le projet</h5>
+          <p>Cloner le dépôt GitHub et entrer dans le répertoire du projet.</p>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-lang">bash</div></div>
+        <div class="code-body"><span class="cmd">git clone</span> <span class="str">https://github.com/NOM_DU_GROUPE/PIL1_2526_03.git</span>
+<span class="cmd">cd</span> PIL1_2526_03</div>
+      </div>
+
+      <!-- Étape 2 -->
+      <div class="step-card">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h5>Accéder au backend Django</h5>
+          <p>Le backend Django se trouve dans le dossier <code>backend/</code>.</p>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-lang">bash</div></div>
+        <div class="code-body"><span class="cmd">cd</span> backend</div>
+      </div>
+
+      <!-- Étape 3 -->
+      <div class="step-card">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h5>Créer et activer l'environnement virtuel</h5>
+          <p>Créer un environnement Python isolé pour le projet.</p>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-lang">bash — Windows / Linux / Mac</div></div>
+        <div class="code-body"><span class="cmt"># Créer l'environnement</span>
+<span class="cmd">python -m venv</span> .venv              <span class="cmt"># Windows</span>
+<span class="cmd">python3 -m venv</span> .venv             <span class="cmt"># Linux / Mac</span>
+
+<span class="cmt"># Activer l'environnement</span>
+<span class="str">.venv\Scripts\Activate.ps1</span>        <span class="cmt"># Windows PowerShell</span>
+<span class="str">.venv\Scripts\activate.bat</span>        <span class="cmt"># Windows CMD</span>
+<span class="cmd">source</span> .venv/bin/activate         <span class="cmt"># Linux / Mac</span>
+
+<span class="cmt"># L'activation est confirmée par :</span>
+<span class="str">(.venv)</span></div>
+      </div>
+
+      <!-- Étape 4 -->
+      <div class="step-card">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h5>Installer les dépendances</h5>
+          <p>Installe Django, psycopg2, channels, pillow et toutes les bibliothèques nécessaires.</p>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-lang">bash</div></div>
+        <div class="code-body"><span class="cmd">pip install</span> -r requirements.txt</div>
+      </div>
+
+      <!-- Étape 5 -->
+      <div class="step-card">
+        <div class="step-num">5</div>
+        <div class="step-content">
+          <h5>Créer la base de données PostgreSQL</h5>
+          <p>Dans pgAdmin, créer une nouvelle base nommée <code>mentorlink_db</code>.</p>
+        </div>
+      </div>
+
+      <!-- Étape 6 -->
+      <div class="step-card">
+        <div class="step-num">6</div>
+        <div class="step-content">
+          <h5>Configurer le fichier .env</h5>
+          <p>Créer un fichier <code>.env</code> dans le dossier backend avec les paramètres de connexion.</p>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-lang">.env — Configuration</div></div>
+        <div class="code-body"><span class="kw">DEBUG</span>=True
+<span class="kw">SECRET_KEY</span>=<span class="str">django-insecure-mentorlink-secret-key</span>
+
+<span class="kw">DB_NAME</span>=<span class="str">mentorlink_db</span>
+<span class="kw">DB_USER</span>=<span class="str">postgres</span>
+<span class="kw">DB_PASSWORD</span>=<span class="str">VOTRE_MOT_DE_PASSE_POSTGRES</span>
+<span class="kw">DB_HOST</span>=<span class="str">localhost</span>
+<span class="kw">DB_PORT</span>=<span class="str">5432</span></div>
+      </div>
+
+      <!-- Étapes 7-10 -->
+      <div class="step-card">
+        <div class="step-num">7</div>
+        <div class="step-content">
+          <h5>Importer la base SQL</h5>
+          <p>Dans pgAdmin → sélectionner <code>mentorlink_db</code> → Tools → Query Tool → ouvrir <code>mentorlink.sql</code> → exécuter.</p>
+        </div>
+      </div>
+      <div class="step-card">
+        <div class="step-num">8</div>
+        <div class="step-content">
+          <h5>Exécuter les migrations Django</h5>
+          <p>Applique les migrations pour synchroniser Django avec la base de données.</p>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-lang">bash</div></div>
+        <div class="code-body"><span class="cmd">python manage.py</span> makemigrations
+<span class="cmd">python manage.py</span> migrate
+<span class="cmd">python manage.py</span> check    <span class="cmt"># Doit afficher : System check identified no issues</span></div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">9</div>
+        <div class="step-content">
+          <h5>Créer un super utilisateur (optionnel)</h5>
+          <p>Permet d'accéder à l'interface d'administration Django via <code>/admin/</code>.</p>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-lang">bash</div></div>
+        <div class="code-body"><span class="cmd">python manage.py</span> createsuperuser</div>
+      </div>
+
+      <div class="step-card">
+        <div class="step-num">10</div>
+        <div class="step-content">
+          <h5>Lancer le serveur Django</h5>
+          <p>Le projet sera accessible sur <code>http://127.0.0.1:8000/</code></p>
+        </div>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-lang">bash</div></div>
+        <div class="code-body"><span class="cmd">python manage.py</span> runserver
+
+<span class="cmt"># Accès à l'application :</span>  <span class="str">http://127.0.0.1:8000/</span>
+<span class="cmt"># Administration Django :</span>   <span class="str">http://127.0.0.1:8000/admin/</span></div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Quickstart -->
+    <div class="mb-5">
+      <h2 class="section-title mb-4">Démarrage Rapide</h2>
+      <div class="callout mb-3">
+        <p><i class="bi bi-lightning-fill me-2"></i> Résumé en une commande pour relancer le projet après installation.</p>
+      </div>
+      <div class="code-block">
+        <div class="code-header"><div class="code-dots"><span></span><span></span><span></span></div><div class="code-lang">bash — Quickstart</div></div>
+        <div class="code-body"><span class="cmd">cd</span> PIL1_2526_03 &amp;&amp; <span class="cmd">cd</span> backend
+<span class="str">.venv\Scripts\Activate.ps1</span>           <span class="cmt"># Windows PowerShell</span>
+<span class="cmd">python manage.py</span> check
+<span class="cmd">python manage.py</span> runserver</div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Erreurs fréquentes -->
+    <div class="mb-5">
+      <h2 class="section-title mb-4">Résolution des Erreurs Fréquentes</h2>
+
+      <div class="error-card">
+        <div class="err-title"><i class="bi bi-x-circle-fill"></i> manage.py introuvable</div>
+        <div class="err-body"><code>can't open file 'manage.py': No such file or directory</code></div>
+        <div class="err-fix"><i class="bi bi-arrow-right me-2"></i>Se placer dans le dossier <code>backend/</code> : <code>cd backend</code></div>
+      </div>
+
+      <div class="error-card">
+        <div class="err-title"><i class="bi bi-x-circle-fill"></i> Module Django introuvable</div>
+        <div class="err-body"><code>ModuleNotFoundError: No module named 'django'</code></div>
+        <div class="err-fix"><i class="bi bi-arrow-right me-2"></i>Activer l'environnement virtuel puis : <code>pip install -r requirements.txt</code></div>
+      </div>
+
+      <div class="error-card">
+        <div class="err-title"><i class="bi bi-x-circle-fill"></i> Erreur d'authentification PostgreSQL</div>
+        <div class="err-body"><code>password authentication failed for user "postgres"</code></div>
+        <div class="err-fix"><i class="bi bi-arrow-right me-2"></i>Vérifier le mot de passe dans le fichier <code>.env</code>, le nom de la base et l'état de PostgreSQL.</div>
+      </div>
+    </div>
+
+    <div class="page-nav-bar">
+      <button class="btn-nav" onclick="showPage(4)"><i class="bi bi-arrow-left"></i> Fonctionnalités</button>
+      <button class="btn-nav primary" onclick="showPage(6)">Bilan &amp; Conclusion <i class="bi bi-arrow-right"></i></button>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <strong>IFRI MentorLink</strong> · Groupe_03 · PIL1_2526_03 · IFRI · 2025–2026
+  </footer>
+</div>
+
+<!-- ══════════════════════════════════════════════
+     PAGE 6 — BILAN & CONCLUSION
+══════════════════════════════════════════════ -->
+<div id="page-6" class="page">
+  <div class="page-wrapper">
+
+    <div class="section-hero">
+      <div class="chapter-num">Chapitre 06</div>
+      <h1>Bilan &amp; Conclusion</h1>
+      <p>Difficultés surmontées, solutions mises en œuvre, utilisation de l'IA, état du projet et perspectives.</p>
+    </div>
+
+    <!-- Difficultés -->
+    <div class="mb-5">
+      <h2 class="section-title mb-4">Difficultés Rencontrées</h2>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="card-custom">
+            <div class="card-icon red"><i class="bi bi-puzzle"></i></div>
+            <h3 class="subsection-title">Intégration Frontend / Backend</h3>
+            <p style="font-size:13.5px;color:var(--text-muted);">La connexion des templates HTML avec Django a nécessité une restructuration des pages, l'adaptation des routes, l'intégration des templates Django et la correction des chemins statiques.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-custom">
+            <div class="card-icon amber"><i class="bi bi-git"></i></div>
+            <h3 class="subsection-title">Gestion Git</h3>
+            <p style="font-size:13.5px;color:var(--text-muted);">Le groupe a rencontré des conflits Git, des erreurs de branches et des problèmes de synchronisation entre les différents membres de l'équipe.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-custom">
+            <div class="card-icon blue"><i class="bi bi-clock-history"></i></div>
+            <h3 class="subsection-title">Gestion du temps</h3>
+            <p style="font-size:13.5px;color:var(--text-muted);">Le délai de développement très court (10 jours) a nécessité des réunions fréquentes, une forte coordination et une priorisation rigoureuse des tâches.</p>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-custom">
+            <div class="card-icon purple"><i class="bi bi-people"></i></div>
+            <h3 class="subsection-title">Différences de niveau technique</h3>
+            <p style="font-size:13.5px;color:var(--text-muted);">Les membres avaient des niveaux variés en Django, Git et PostgreSQL. Cela a nécessité des formations internes, des explications et des démonstrations pratiques.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Solutions -->
+    <div class="mb-5">
+      <h2 class="section-title mb-4">Solutions Apportées</h2>
+      <div class="timeline">
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-card">
+            <div class="day-badge">Solution 1</div>
+            <h5>Modularisation du projet</h5>
+            <p>Le projet a été découpé en modules Django indépendants, permettant à chaque membre de travailler sur son domaine sans bloquer les autres.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-card">
+            <div class="day-badge">Solution 2</div>
+            <h5>Documentation continue</h5>
+            <p>Chaque membre documentait régulièrement son travail, facilitant la transmission d'information et la résolution des conflits d'intégration.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-card">
+            <div class="day-badge">Solution 3</div>
+            <h5>Réunions quotidiennes à 18h30</h5>
+            <p>Les réunions journalières permettaient de suivre l'avancement, d'identifier les blocages et d'ajuster les priorités en temps réel.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot"></div>
+          <div class="timeline-card">
+            <div class="day-badge">Solution 4</div>
+            <h5>Intégration progressive</h5>
+            <p>Les fonctionnalités ont été intégrées progressivement (frontend statique → backend → connexion templates) pour limiter les erreurs cumulées.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- IA -->
+    <div class="mb-5">
+      <h2 class="section-title mb-3">Utilisation de l'Intelligence Artificielle</h2>
+      <div class="callout amber mb-4">
+        <p><i class="bi bi-robot me-2"></i>
+          Des outils d'IA ont été utilisés comme <strong>support technique</strong>, sans se substituer aux décisions de l'équipe.</p>
+      </div>
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="card-custom">
+            <div class="card-icon green"><i class="bi bi-check2-circle"></i></div>
+            <h3 class="subsection-title">Usage de l'IA</h3>
+            <ul style="font-size:13.5px;color:var(--text-muted);padding-left:18px;margin:0;">
+              <li>Analyse technique de problèmes</li>
+              <li>Résolution de bugs spécifiques</li>
+              <li>Optimisation de portions de code</li>
+              <li>Structuration documentaire</li>
+              <li>Assistance à l'intégration</li>
+            </ul>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="card-custom">
+            <div class="card-icon blue"><i class="bi bi-person-workspace"></i></div>
+            <h3 class="subsection-title">Réalisé par l'équipe</h3>
+            <ul style="font-size:13.5px;color:var(--text-muted);padding-left:18px;margin:0;">
+              <li>Choix techniques et d'architecture</li>
+              <li>Conception de l'algorithme de matching</li>
+              <li>Validation des fonctionnalités</li>
+              <li>Intégration finale du projet</li>
+              <li>Coordination et organisation</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- État final -->
+    <div class="mb-5">
+      <h2 class="section-title mb-4">État Final du Projet</h2>
+      <div class="callout green mb-4">
+        <p><i class="bi bi-check-circle-fill me-2"></i>
+          <strong>Le projet est fonctionnel.</strong> Les principales fonctionnalités demandées dans le cahier des charges sont implémentées.</p>
+      </div>
+      <div class="table-wrapper">
+        <table class="table-pro">
+          <thead>
+            <tr><th>Fonctionnalité</th><th>Statut</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Authentification (inscription, connexion)</td><td><span class="label-pill" style="background:#dcfce7;color:#16a34a;">✔ Réalisé</span></td></tr>
+            <tr><td>Gestion des profils utilisateurs</td><td><span class="label-pill" style="background:#dcfce7;color:#16a34a;">✔ Réalisé</span></td></tr>
+            <tr><td>Offres et demandes de mentorat</td><td><span class="label-pill" style="background:#dcfce7;color:#16a34a;">✔ Réalisé</span></td></tr>
+            <tr><td>Matching intelligent par score</td><td><span class="label-pill" style="background:#dcfce7;color:#16a34a;">✔ Réalisé</span></td></tr>
+            <tr><td>Messagerie entre utilisateurs</td><td><span class="label-pill" style="background:#dcfce7;color:#16a34a;">✔ Réalisé</span></td></tr>
+            <tr><td>Système de notifications</td><td><span class="label-pill" style="background:#dcfce7;color:#16a34a;">✔ Réalisé</span></td></tr>
+            <tr><td>Dashboard utilisateur</td><td><span class="label-pill" style="background:#dcfce7;color:#16a34a;">✔ Réalisé</span></td></tr>
+            <tr><td>Déploiement en ligne</td><td><span class="label-pill" style="background:#fef3c7;color:#d97706;">⏳ Perspective future</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <!-- Conclusion -->
+    <div class="mb-5">
+      <h2 class="section-title mb-4">Conclusion</h2>
+      <p class="lead-text">Le projet IFRI MentorLink nous a permis de développer de nombreuses compétences techniques et organisationnelles. Au-delà du développement logiciel, ce projet nous a appris :</p>
+
+      <div class="row g-3 mb-4">
+        <div class="col-md-4"><div class="card-custom text-center">
+          <i class="bi bi-people-fill" style="font-size:28px;color:var(--primary);display:block;margin-bottom:8px;"></i>
+          <strong style="font-size:14px;">Travail collaboratif</strong>
+          <p style="font-size:13px;color:var(--text-muted);margin-top:4px;">Coordination efficace à travers GitHub et les réunions quotidiennes.</p>
+        </div></div>
+        <div class="col-md-4"><div class="card-custom text-center">
+          <i class="bi bi-clock" style="font-size:28px;color:var(--accent);display:block;margin-bottom:8px;"></i>
+          <strong style="font-size:14px;">Gestion du temps</strong>
+          <p style="font-size:13px;color:var(--text-muted);margin-top:4px;">Livraison complète en 10 jours grâce à une organisation rigoureuse.</p>
+        </div></div>
+        <div class="col-md-4"><div class="card-custom text-center">
+          <i class="bi bi-code-slash" style="font-size:28px;color:var(--warning);display:block;margin-bottom:8px;"></i>
+          <strong style="font-size:14px;">Architecture logicielle</strong>
+          <p style="font-size:13px;color:var(--text-muted);margin-top:4px;">Django, PostgreSQL, intégration frontend/backend dans un projet réel.</p>
+        </div></div>
+      </div>
+
+      <div style="background:linear-gradient(135deg,var(--navy),var(--primary-dark));border-radius:var(--radius-lg);padding:36px;text-align:center;color:#fff;">
+        <div style="font-size:13px;text-transform:uppercase;letter-spacing:.1em;color:rgba(255,255,255,.55);margin-bottom:12px;">Mot de la fin</div>
+        <p style="font-size:17px;line-height:1.7;color:rgba(255,255,255,.88);max-width:640px;margin:0 auto;">
+          Malgré les contraintes de temps et les difficultés techniques rencontrées, le groupe a réussi à développer une <strong style="color:#fff;">plateforme fonctionnelle</strong> répondant globalement aux exigences du cahier des charges. Cette expérience constitue une étape importante dans notre formation en génie logiciel et développement web.
+        </p>
+        <div style="margin-top:20px;font-size:13px;color:rgba(255,255,255,.45);">Groupe_03 · IFRI MentorLink · 2025–2026</div>
+      </div>
+    </div>
+
+    <div class="page-nav-bar">
+      <button class="btn-nav" onclick="showPage(5)"><i class="bi bi-arrow-left"></i> Installation</button>
+      <button class="btn-nav primary" onclick="showPage(0)"><i class="bi bi-house"></i> Retour à l'accueil</button>
+    </div>
+  </div>
+
+  <footer class="site-footer">
+    <strong>IFRI MentorLink</strong> · Groupe_03 · PIL1_2526_03 · IFRI · 2025–2026
+  </footer>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+  // ═══════════════════════════════════
+  // PAGE SYSTEM
+  // ═══════════════════════════════════
+  const TOTAL_PAGES = 6;
+
+  function showPage(n) {
+    // Hide all pages
+    document.getElementById('page-cover').classList.remove('active');
+    for (let i = 1; i <= TOTAL_PAGES; i++) {
+      const p = document.getElementById('page-' + i);
+      if (p) p.classList.remove('active');
+    }
+
+    // Show nav only for content pages
+    const nav = document.getElementById('main-nav');
+
+    if (n === 0) {
+      document.getElementById('page-cover').classList.add('active');
+      nav.style.display = 'none';
+    } else {
+      const target = document.getElementById('page-' + n);
+      if (target) {
+        target.classList.add('active');
+        nav.style.display = 'block';
+        // Update active nav link
+        for (let i = 1; i <= TOTAL_PAGES; i++) {
+          const link = document.getElementById('nav-' + i);
+          if (link) link.classList.remove('active');
+        }
+        const activeLink = document.getElementById('nav-' + n);
+        if (activeLink) activeLink.classList.add('active');
+      }
+    }
+
+    // Scroll to top
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ═══════════════════════════════════
+  // MOBILE NAV
+  // ═══════════════════════════════════
+  function toggleMobileNav() {
+    const menu = document.getElementById('mobile-menu');
+    menu.style.display = menu.style.display === 'none' ? 'block' : 'none';
+  }
+
+  // ═══════════════════════════════════
+  // ANIMATE BARS ON PAGE SHOW
+  // ═══════════════════════════════════
+  // Bars start at 0 width, animate when page becomes visible
+  document.querySelectorAll('.match-bar-fill').forEach(bar => {
+    const target = bar.style.width;
+    bar.style.width = '0%';
+    setTimeout(() => { bar.style.width = target; }, 400);
+  });
+
+  // Re-animate bars when page 4 opens
+  const origShow = window.showPage;
+  window.showPage = function(n) {
+    origShow(n);
+    if (n === 4) {
+      setTimeout(() => {
+        document.querySelectorAll('.match-bar-fill').forEach(bar => {
+          const target = bar.getAttribute('data-target') || bar.style.width;
+          bar.style.width = '0%';
+          setTimeout(() => { bar.style.width = target; }, 50);
+        });
+      }, 100);
+    }
+  };
+
+  // Store target widths
+  document.querySelectorAll('.match-bar-fill').forEach(bar => {
+    bar.setAttribute('data-target', bar.style.width);
+  });
+</script>
+
+</body>
+</html>

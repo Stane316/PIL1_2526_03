@@ -1,0 +1,297 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block page_title %}Messagerie{% endblock %}
+
+{% block content %}
+
+<div class="card border-light shadow-sm overflow-hidden" style="min-height:600px;">
+  <div class="row g-0" style="height:600px;">
+
+    <!-- ════════════════════════════════════════════════════════════
+         COLONNE GAUCHE : Liste des conversations
+         ════════════════════════════════════════════════════════════ -->
+    <div class="col-md-4 border-end border-light bg-white d-flex flex-column" style="height:600px;">
+
+      <!-- Recherche -->
+      <div class="p-3 border-bottom border-light">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-light border-end-0">
+            <i class="bi bi-search text-muted"></i>
+          </span>
+          <input type="text" class="form-control border-start-0 bg-light"
+                 placeholder="Chercher une discussion..." id="searchConv" title="Chercher une discussion">
+        </div>
+      </div>
+
+      <!-- Liste des conversations -->
+      <div class="overflow-auto flex-grow-1" id="convList">
+        {% for conversation in conversations %}
+        <a href="{% url 'message' %}?conv={{ conversation.id }}"
+           class="text-decoration-none text-dark d-block p-3 border-bottom border-light position-relative
+                  {% if conversation.id == conversation_active.id %}bg-primary bg-opacity-10{% endif %}">
+          {% if conversation.id == conversation_active.id %}
+            <div class="position-absolute top-0 start-0 h-100 bg-primary" style="width:3px;"></div>
+          {% endif %}
+          <div class="d-flex align-items-center gap-3">
+            <div class="position-relative">
+              <img src="https://ui-avatars.com/api/?name={{ conversation.interlocuteur.prenom }}+{{ conversation.interlocuteur.nom }}&background=random"
+                   class="rounded-circle" width="40" height="40" alt="Avatar">
+              {% if conversation.interlocuteur.en_ligne %}
+                <span class="position-absolute bottom-0 end-0 bg-success border border-white rounded-circle"
+                      style="width:10px;height:10px;"></span>
+              {% endif %}
+            </div>
+            <div class="flex-grow-1 min-w-0">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <h6 class="mb-0 fw-bold fs-6 text-truncate">
+                  {{ conversation.interlocuteur.prenom }} {{ conversation.interlocuteur.nom }}
+                </h6>
+                <span class="small {% if conversation.id == conversation_active.id %}text-primary{% else %}text-muted{% endif %} fw-medium"
+                      style="font-size:.7rem;white-space:nowrap;">
+                  {{ conversation.dernier_message.date|date:"H:i" }}
+                </span>
+              </div>
+              <p class="mb-0 small text-muted text-truncate
+                         {% if conversation.id == conversation_active.id %}fw-medium{% endif %}">
+                {{ conversation.dernier_message.contenu|truncatechars:45 }}
+              </p>
+            </div>
+            {% if conversation.nb_non_lus %}
+              <span class="badge bg-primary rounded-pill">{{ conversation.nb_non_lus }}</span>
+            {% endif %}
+          </div>
+        </a>
+        {% empty %}
+        <div class="p-4 text-center text-muted">
+          <i class="bi bi-chat-square-dots fs-3 d-block mb-2"></i>
+          <p class="small mb-0">Aucune conversation pour l'instant.</p>
+          <p class="small">Contactez un profil depuis
+            <a href="{% url 'matching' %}" class="text-primary">Matching</a> ou
+            <a href="{% url 'offres' %}" class="text-primary">Offres</a>.
+          </p>
+        </div>
+        {% endfor %}
+      </div>
+
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════
+         COLONNE DROITE : Fenêtre de chat
+         ════════════════════════════════════════════════════════════ -->
+    <div class="col-md-8 d-flex flex-column" style="height:600px;background-color:var(--bg-body, #f5f7fb);">
+
+      {% if conversation_active %}
+
+        <!-- En-tête du chat -->
+        <div class="p-3 bg-white border-bottom border-light d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-3">
+            <img src="https://ui-avatars.com/api/?name={{ conversation_active.interlocuteur.prenom }}+{{ conversation_active.interlocuteur.nom }}&background=random"
+                 class="rounded-circle" width="40" height="40" alt="Avatar">
+            <div>
+              <h6 class="mb-0 fw-bold">
+                {{ conversation_active.interlocuteur.prenom }}
+                {{ conversation_active.interlocuteur.nom }}
+              </h6>
+              {% if conversation_active.interlocuteur.en_ligne %}
+                <span class="small text-success d-flex align-items-center gap-1">
+                  <span class="rounded-circle bg-success" style="width:6px;height:6px;display:inline-block;"></span>En ligne
+                </span>
+              {% endif %}
+            </div>
+          </div>
+          
+          <div class="d-flex gap-2">
+            <a href="{% url 'matching' %}" class="btn btn-sm btn-ghost" title="Retour au matching">
+              <i class="bi bi-arrow-left me-1"></i>Retour au matching
+            </a>
+          </div>
+        </div>
+
+        <!-- Corps du chat (Fil de discussion) -->
+        <div class="flex-grow-1 overflow-auto p-4" id="chatBody">
+          
+          <!-- Ce fil de discussion est désormais régénéré de manière fluide par le script JS asynchrone ci-dessous -->
+          {% for msg in messages_conv %}
+            {% if msg.expediteur == profil %}
+              <!-- Message envoyé par moi (droite, bleu) -->
+              <div class="d-flex justify-content-end mb-3">
+                <div class="bg-primary text-white rounded-3 px-3 py-2 shadow-sm" style="max-width:70%;">
+                  <p class="mb-1 small">{{ msg.contenu }}</p>
+                  <div class="d-flex justify-content-end align-items-center gap-1 text-white-50" style="font-size:.65rem;">
+                    {{ msg.date|date:"H:i" }}
+                    {% if msg.lu %}<i class="bi bi-check2-all ms-1"></i>{% endif %}
+                  </div>
+                </div>
+              </div>
+            {% else %}
+              <!-- Message reçu (gauche, blanc/gris) -->
+              <div class="d-flex justify-content-start align-items-start gap-2 mb-3">
+                <img src="https://ui-avatars.com/api/?name={{ msg.expediteur.prenom }}+{{ msg.expediteur.nom }}&background=random"
+                     class="rounded-circle" width="32" height="32" alt="Avatar">
+                <div class="bg-white text-dark rounded-3 px-3 py-2 border border-light shadow-sm" style="max-width:70%;">
+                  <p class="mb-1 text-dark small">{{ msg.contenu }}</p>
+                  <span class="text-muted d-block text-end" style="font-size:.65rem;">{{ msg.date|date:"H:i" }}</span>
+                </div>
+              </div>
+            {% endif %}
+          {% endfor %}
+
+        </div>
+
+        <!-- Zone de saisie -->
+        <div class="p-3 bg-white border-top border-light">
+          <form method="POST" action="{% url 'message' %}" class="d-flex gap-2 align-items-center">
+            {% csrf_token %}
+            <input type="hidden" name="conv_id" value="{{ conversation_active.id }}">
+            <button title="Ajouter une pièce jointe" type="button"
+                    class="btn btn-light text-muted rounded-circle flex-shrink-0"
+                    style="width:40px;height:40px;padding:0;"
+                    title="Pièce jointe (bientôt disponible)" disabled>
+              <i class="bi bi-paperclip"></i>
+            </button>
+            <input type="text" class="form-control bg-light border-0 py-2"
+                   name="contenu"
+                   placeholder="Écrivez un message..."
+                   autocomplete="off" required title="Texte du message">
+            <button title="Envoyer le message" type="submit"
+                    class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                    style="width:40px;height:40px;padding:0;">
+              <i class="bi bi-send-fill" style="margin-left:-2px;"></i>
+            </button>
+          </form>
+        </div>
+
+      {% else %}
+        <!-- Aucune conversation sélectionnée -->
+        <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-center text-muted">
+          <i class="bi bi-chat-left-text fs-1 mb-3" style="color:var(--ml-border);"></i>
+          <h6 class="fw-bold">Sélectionnez une conversation</h6>
+          <p class="small text-center px-4">
+            Choisissez une discussion dans la liste à gauche, ou démarrez-en une depuis
+            <a href="{% url 'matching' %}" class="text-primary">Matching</a>.
+          </p>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Scroll automatique initial vers le dernier message
+  const chatBody = document.getElementById('chatBody');
+  if (chatBody) chatBody.scrollTop = chatBody.scrollHeight;
+
+  // Filtrage en direct de la liste des conversations à gauche
+  const searchInput = document.getElementById('searchConv');
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      const q = this.value.toLowerCase();
+      document.querySelectorAll('#convList a').forEach(function (item) {
+        const name = item.querySelector('h6')?.textContent.toLowerCase() || '';
+        const preview = item.querySelector('p')?.textContent.toLowerCase() || '';
+        item.style.display = (name.includes(q) || preview.includes(q)) ? '' : 'none';
+      });
+    });
+  }
+
+  // ============================================================
+  // LOGIQUE DE CHAT EN DIRECT ASYNCHRONE (AJAX POLLING VIA FETCH)
+  // ============================================================
+  const activeConvId = "{{ conversation_active.id }}";
+  const profilId = parseInt("{{ profil.id }}");
+
+  if (activeConvId && activeConvId !== "None" && !isNaN(profilId)) {
+    const chatForm = document.querySelector('.p-3.bg-white.border-top.border-light form');
+    
+    // Intercepter la soumission pour envoyer le message de manière asynchrone (Sans rechargement !)
+    if (chatForm) {
+      chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const input = chatForm.querySelector('input[name="contenu"]');
+        const contenu = input.value.trim();
+        if (!contenu) return;
+
+        fetch(`/messages/api/${activeConvId}/envoyer/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+          },
+          body: JSON.stringify({ contenu: contenu })
+        })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            input.value = '';
+            loadMessages(); // Rafraîchit instantanément la vue
+          }
+        });
+      });
+    }
+
+    // Récupération périodique des messages (Polling toutes les 2.5 secondes)
+    function loadMessages() {
+      fetch(`/messages/api/${activeConvId}/`)
+      .then(response => response.json())
+      .then(data => {
+        const chatBody = document.getElementById('chatBody');
+        if (!chatBody) return;
+
+        let html = '';
+        data.messages.forEach(msg => {
+          if (msg.expediteur_id === profilId) {
+            // Message envoyé par moi (droite, bleu)
+            html += `
+              <div class="d-flex justify-content-end mb-3">
+                <div class="bg-primary text-white rounded-3 px-3 py-2 shadow-sm" style="max-width:70%;">
+                  <p class="mb-1 small">${escapeHTML(msg.contenu)}</p>
+                  <div class="d-flex justify-content-end align-items-center gap-1 text-white-50" style="font-size:.65rem;">
+                    ${msg.date}
+                    ${msg.lu ? '<i class="bi bi-check2-all"></i>' : '<i class="bi bi-check2"></i>'}
+                  </div>
+                </div>
+              </div>
+            `;
+          } else {
+            // Message reçu par l'autre (gauche, blanc/gris)
+            html += `
+              <div class="d-flex justify-content-start align-items-start gap-2 mb-3">
+                <img src="https://ui-avatars.com/api/?name=${encodeURIComponent(msg.expediteur_nom)}&background=random"
+                     class="rounded-circle" width="32" height="32" alt="Avatar">
+                <div class="bg-white text-dark rounded-3 px-3 py-2 border border-light shadow-sm" style="max-width:70%;">
+                  <p class="mb-1 text-dark small">${escapeHTML(msg.contenu)}</p>
+                  <span class="text-muted d-block text-end" style="font-size:.65rem;">${msg.date}</span>
+                </div>
+              </div>
+            `;
+          }
+        });
+
+        // Mettre à jour le DOM uniquement si le nombre de messages a changé pour préserver la fluidité
+        if (chatBody.dataset.lastCount !== data.messages.length.toString()) {
+          chatBody.innerHTML = html;
+          chatBody.scrollTop = chatBody.scrollHeight; // Scroll vers le bas
+          chatBody.dataset.lastCount = data.messages.length.toString();
+        }
+      });
+    }
+
+    // Helper de sécurité pour échapper le HTML
+    function escapeHTML(str) {
+      return str.replace(/[&<>'"]/g, 
+        tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag] || tag)
+      );
+    }
+
+    // Premier chargement au lancement de la page
+    loadMessages();
+    // Démarrage de la boucle asynchrone toutes les 2.5 secondes
+    setInterval(loadMessages, 2500);
+  }
+</script>
+{% endblock %}

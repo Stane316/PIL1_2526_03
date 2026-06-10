@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block layout %}
+<div class="ml-wrapper"> <!-- Utilise la classe CSS unifiée du layout -->
+
+  <!-- ── Sidebar ────────────────────────────────────────────── -->
+  {% include "components/sidebar.html" %}
+
+  <!-- ── Zone principale ───────────────────────────────────── -->
+  <div class="ml-main-content d-flex flex-column min-vh-100"> <!-- Utilise la classe CSS unifiée du layout -->
+
+    <!-- Topbar -->
+    {% include "components/navbar_profil.html" %}
+
+    <!-- Contenu -->
+    <main class="flex-grow-1 p-4">
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    {% if not sans_footer %}
+      {% include "components/footer.html" %}
+    {% endif %}
+
+  </div>
+</div>
+{% endblock %}

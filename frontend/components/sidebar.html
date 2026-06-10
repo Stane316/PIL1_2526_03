@@ -1,0 +1,84 @@
+<!-- Composant : Sidebar (classe CSS réelle : .sidebar .nav-link) -->
+<nav class="ml-sidebar d-flex flex-column">
+
+  <!-- Logo -->
+  <div class="mb-4">
+    <a href="{% url 'dashboard' %}" class="ml-logo text-decoration-none">
+      <span class="ml-logo-mark"><i class="bi bi-mortarboard-fill"></i></span>
+      <span>MentorLink</span>
+    </a>
+  </div>
+
+  <!-- Navigation principale -->
+  <div class="flex-grow-1">
+
+    <a href="{% url 'dashboard' %}"
+       class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+      <i class="bi bi-grid-1x2-fill"></i>
+      <span>Tableau de bord</span>
+    </a>
+
+    <a href="{% url 'profil' %}"
+       class="nav-link {% if request.resolver_match.url_name == 'profil' %}active{% endif %}">
+      <i class="bi bi-person-circle"></i>
+      <span>Mon Profil</span>
+    </a>
+
+    <a href="{% url 'matching' %}"
+       class="nav-link {% if request.resolver_match.url_name == 'matching' %}active{% endif %}">
+      <i class="bi bi-bullseye"></i>
+      <span>Matching</span>
+    </a>
+
+    <a href="{% url 'offres' %}"
+       class="nav-link {% if request.resolver_match.url_name == 'offres' %}active{% endif %}">
+      <i class="bi bi-hand-thumbs-up-fill"></i>
+      <span>Offres</span>
+    </a>
+
+    <a href="{% url 'demandes' %}"
+       class="nav-link {% if request.resolver_match.url_name == 'demandes' %}active{% endif %}">
+      <i class="bi bi-search-heart-fill"></i>
+      <span>Demandes</span>
+    </a>
+
+    <a href="{% url 'relations' %}"
+       class="nav-link {% if request.resolver_match.url_name == 'relations' %}active{% endif %}">
+      <i class="bi bi-link-45deg"></i>
+      <span>Relations actives</span>
+    </a>
+
+    <hr style="border-color: var(--border-light); margin: 0.5rem 0;">
+
+    <a href="{% url 'message' %}"
+       class="nav-link {% if request.resolver_match.url_name == 'message' %}active{% endif %} d-flex justify-content-between align-items-center">
+      <span class="d-flex align-items-center gap-2">
+        <i class="bi bi-chat-left-text-fill"></i> Messages
+      </span>
+      {% if nb_messages_non_lus %}
+        <span class="badge bg-danger rounded-pill">{{ nb_messages_non_lus }}</span>
+      {% endif %}
+    </a>
+
+    <a href="{% url 'notifications' %}"
+       class="nav-link {% if request.resolver_match.url_name == 'notifications' %}active{% endif %} d-flex justify-content-between align-items-center">
+      <span class="d-flex align-items-center gap-2">
+        <i class="bi bi-bell-fill"></i> Notifications
+      </span>
+      {% if nb_notifications %}
+        <span class="badge bg-warning text-dark rounded-pill">{{ nb_notifications }}</span>
+      {% endif %}
+    </a>
+
+  </div>
+
+     <!-- Déconnexion -->
+  <div class="sidebar-footer">
+    <a href="{% url 'deconnexion' %}" class="nav-link text-danger"
+       onclick="return confirm('Voulez-vous vous déconnecter ?')">
+      <i class="bi bi-box-arrow-left"></i>
+      <span>Déconnexion</span>
+    </a>
+  </div>
+
+</nav>

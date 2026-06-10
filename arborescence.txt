@@ -1,0 +1,169 @@
+IFRI_MentorLink/
+│
+├── README.md                          # Présentation du projet, instructions de déploiement, manuel d'utilisation
+├── LICENSE                            # Licence du projet
+├── .gitignore                         # Fichiers à ignorer par Git
+│
+├── docs/                              # Documentation du projet
+│   ├── rapport.html                   # Rapport final HTML (livrable requis)
+│   ├── conception/
+│   │   ├── mcd.png                    # Modèle Conceptuel de Données
+│   │   └── mpd.png                    # Modèle Physique de Données
+│   └── api/
+│       └── endpoints.md               # Documentation des endpoints API
+│
+├── database/
+│   └── mentorlink.sql                 # Script SQL final (livrable requis)
+│
+├── presentations/                     # Slides de présentation finale
+│
+├── resources/                         # Ressources partagées (maquettes, logos, charte graphique)
+│
+├── frontend/                          # Interface client — géré par l'équipe frontend
+│
+└── backend/                           # Serveur Django
+    ├── .env                           # Variables d'environnement (DB, SECRET_KEY, etc.)
+    ├── requirements.txt               # Dépendances Python
+    ├── manage.py                      # Commande Django principale
+    │
+    ├── config/                        # Configuration du projet Django
+    │   ├── __init__.py
+    │   ├── settings.py                # Paramètres Django (DB, INSTALLED_APPS, CORS, Channels...)
+    │   ├── urls.py                    # Routage principal (inclut les urls de chaque app)
+    │   ├── asgi.py                    # Point d'entrée ASGI (requis pour WebSocket/Channels)
+    │   └── wsgi.py                    # Point d'entrée WSGI (HTTP classique)
+    │
+    ├── core/                          # Utilitaires et éléments partagés entre les apps
+    │   ├── __init__.py
+    │   ├── enums.py                   # Tous les ENUM du MPD (filiere, niveau, mode_mentorat, etc.)
+    │   ├── permissions.py             # Permissions custom Django REST Framework
+    │   └── utils.py                   # Fonctions utilitaires générales
+    │
+    ├── apps/
+    │   │
+    │   ├── accounts/                  # Gestion des comptes et profils utilisateur
+    │   │   ├── migrations/
+    │   │   │   └── __init__.py
+    │   │   ├── __init__.py
+    │   │   ├── admin.py               # Enregistrement modèles dans l'admin Django
+    │   │   ├── apps.py                # Configuration de l'app (name = 'apps.accounts')
+    │   │   ├── models.py              # Modèles : Utilisateur, DisponibiliteUtilisateur, Maitrise, Besoin, Domaine
+    │   │   ├── serializers.py         # Sérialisation DRF : inscription, profil, maitrise, besoin
+    │   │   ├── views.py               # Vues : inscription, connexion, profil (GET/PUT), maitrise, besoin
+    │   │   ├── urls.py                # Routes : /auth/register/, /auth/login/, /profil/<id>/
+    │   │   └── tests.py               # Tests unitaires inscription, connexion, profil
+    │   │
+    │   ├── publications/              # Offres et demandes de mentorat
+    │   │   ├── migrations/
+    │   │   │   └── __init__.py
+    │   │   ├── __init__.py
+    │   │   ├── admin.py
+    │   │   ├── apps.py                # name = 'apps.publications'
+    │   │   ├── models.py              # Modèles : Publication, PublicationDomaine, DisponibilitePublication
+    │   │   ├── serializers.py         # Sérialisation création/liste/détail publication
+    │   │   ├── views.py               # Vues : CRUD publications, recherche par filtre (matière, horaire)
+    │   │   ├── urls.py                # Routes : /publications/, /publications/<id>/
+    │   │   └── tests.py
+    │   │
+    │   ├── matching/                  # Algorithme de matching mentor-mentoré
+    │   │   ├── __init__.py
+    │   │   ├── apps.py                # name = 'apps.matching'
+    │   │   ├── engine.py              # Logique de scoring : compatibilité compétences, horaires, filière
+    │   │   ├── views.py               # Vue : retourne les suggestions de matching pour un utilisateur
+    │   │   ├── urls.py                # Routes : /matching/suggestions/
+    │   │   └── tests.py               # Tests du moteur de scoring
+    │   │
+    │   ├── mentorat/                  # Réponses aux publications et relations de mentorat
+    │   │   ├── migrations/
+    │   │   │   └── __init__.py
+    │   │   ├── __init__.py
+    │   │   ├── admin.py
+    │   │   ├── apps.py                # name = 'apps.mentorat'
+    │   │   ├── models.py              # Modèles : Reponse, ReponseDomaine, RelationMentorat, RelationDomaine
+    │   │   ├── serializers.py         # Sérialisation réponse, relation
+    │   │   ├── views.py               # Vues : envoyer réponse, accepter/refuser, gérer relation
+    │   │   ├── urls.py                # Routes : /reponses/, /relations/, /relations/<id>/
+    │   │   └── tests.py
+    │   │
+    │   ├── messaging/                 # Messagerie instantanée (WebSocket)
+    │   │   ├── migrations/
+    │   │   │   └── __init__.py
+    │   │   ├── __init__.py
+    │   │   ├── admin.py
+    │   │   ├── apps.py                # name = 'apps.messaging'
+    │   │   ├── models.py              # Modèles : Conversation, Message
+    │   │   ├── serializers.py         # Sérialisation conversation, message
+    │   │   ├── consumers.py           # WebSocket consumer (Django Channels) : envoi/réception messages
+    │   │   ├── routing.py             # Routage WebSocket : ws/messaging/<conversation_id>/
+    │   │   ├── views.py               # Vues HTTP : liste conversations, historique messages
+    │   │   ├── urls.py                # Routes : /conversations/, /conversations/<id>/messages/
+    │   │   └── tests.py
+    │   │
+    │   └── notifications/             # Notifications utilisateur
+    │       ├── migrations/
+    │       │   └── __init__.py
+    │       ├── __init__.py
+    │       ├── admin.py
+    │       ├── apps.py                # name = 'apps.notifications'
+    │       ├── models.py              # Modèle : Notification
+    │       ├── serializers.py         # Sérialisation notification
+    │       ├── views.py               # Vues : liste notifications, marquer comme lu
+    │       ├── urls.py                # Routes : /notifications/, /notifications/<id>/read/
+    │       └── tests.py
+    │
+    ├── media/                         # Fichiers uploadés par les utilisateurs (servis en dev)
+    │   └── profile_pictures/          # Photos de profil des utilisateurs
+    │
+    ├── static/                        # Fichiers statiques Django (collectstatic en prod)
+    │   ├── css/
+    │   └── js/
+    │
+    └── templates/                     # Templates HTML Django (si rendu côté serveur nécessaire)
+        └── base.html
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+NOTES IMPORTANTES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. MEDIA (upload photos de profil)
+   - Ajouter dans settings.py :
+       MEDIA_URL = '/media/'
+       MEDIA_ROOT = BASE_DIR / 'media'
+   - Ajouter dans config/urls.py (dev uniquement) :
+       from django.conf import settings
+       from django.conf.urls.static import static
+       urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+   - Dans accounts/models.py, le champ photo_profil utilisera :
+       photo_profil = models.ImageField(upload_to='profile_pictures/', null=True, blank=True)
+
+2. WEBSOCKET (messagerie temps réel)
+   - Installer : pip install channels daphne channels-redis
+   - Configurer CHANNEL_LAYERS dans settings.py avec Redis
+   - Le fichier asgi.py doit inclure le routage Channels
+
+3. PACKAGES REQUIS (requirements.txt)
+   django
+   djangorestframework
+   djangorestframework-simplejwt
+   django-cors-headers
+   channels
+   daphne
+   channels-redis
+   psycopg2-binary
+   pillow                  ← obligatoire pour ImageField (photos de profil)
+   python-dotenv
+
+4. INSTALLED_APPS dans settings.py
+   'apps.accounts',
+   'apps.publications',
+   'apps.matching',
+   'apps.mentorat',
+   'apps.messaging',
+   'apps.notifications',
+   'rest_framework',
+   'corsheaders',
+   'channels',
+
+5. LIVRABLE SQL
+   Générer avec : pg_dump --schema-only mentorlink_db > database/mentorlink.sql

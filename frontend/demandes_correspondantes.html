@@ -1,0 +1,28 @@
+<h3>Étudiants recherchant votre expertise</h3>
+{% if demandes_compatibles %}
+    {% for match in demandes_compatibles %}
+        <div class="profile-card">
+            <span class="badge-score" style="background:#17a2b8;">Score : {{ match.score }}%</span>
+            
+            {% if match.utilisateur.photo_profil %}
+                <img src="{{ match.utilisateur.photo_profil }}" class="profile-img" alt="Photo">
+            {% else %}
+                <img src="https://api.dicebear.com/7.x/bottts/svg?seed={{ match.utilisateur.id }}" class="profile-img" alt="Avatar">
+            {% endif %}
+
+            <div>
+                <p style="margin:0; font-size:1.2em;"><strong>{{ match.utilisateur.prenom }} {{ match.utilisateur.nom }}</strong></p>
+                <p style="margin:5px 0; color:#555;">Filière : {{ match.utilisateur.filiere }} | Niveau : {{ match.utilisateur.niveau }}</p>
+                <p style="margin:5px 0;"><strong>A besoin d'aide en :</strong> 
+                    {% for mat in match.matieres %}<span style="background:#fff3cd; padding:2px 8px; border-radius:10px; font-size:0.9em; margin-right:5px;">{{ mat }}</span>{% endfor %}
+                </p>
+                <div style="margin-top:10px;">
+                    <a href="#" style="background:#17a2b8; color:white; padding:5px 12px; text-decoration:none; border-radius:4px; font-size:0.9em; margin-right:10px;">Voir profil</a>
+                    <a href="#" style="background:#6c757d; color:white; padding:5px 12px; text-decoration:none; border-radius:4px; font-size:0.9em;">Contacter</a>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+{% else %}
+    <p>Aucun étudiant n'a besoin d'aide dans vos domaines de compétences actuellement.</p>
+{% endif %}

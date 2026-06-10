@@ -1,0 +1,203 @@
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block page_title %}Mon Profil{% endblock %}
+
+{% block content %}
+
+<div class="row g-4">
+
+  <!-- ─── Colonne gauche : carte identité ──────────────────────── -->
+  <div class="col-lg-4">
+    <div class="card border-light shadow-sm mb-4">
+      <div class="card-body text-center pt-5 pb-4">
+
+        <!-- Photo de profil -->
+        <div class="position-relative d-inline-block mb-3">
+          {% if profil.photo_profil %}
+            <img src="{{ profil.photo_profil }}"
+                 alt="{{ profil.prenom }} {{ profil.nom }}"
+                 class="rounded-circle shadow-sm"
+                 style="width:120px;height:120px;object-fit:cover;">
+          {% else %}
+            <img src="https://ui-avatars.com/api/?name={{ profil.prenom|default:'U' }}+{{ profil.nom|default:'S' }}&background=0B3C91&color=fff&size=120"
+                 alt="Avatar"
+                 class="rounded-circle shadow-sm"
+                 style="width:120px;height:120px;">
+          {% endif %}
+          <a href="{% url 'modifier_profil' %}"
+             class="btn btn-sm btn-primary position-absolute bottom-0 end-0 rounded-circle"
+             style="width:32px;height:32px;padding:0;"
+             title="Changer la photo">
+            <i class="bi bi-camera-fill"></i>
+          </a>
+        </div>
+
+        <!-- Identité -->
+        <h5 class="fw-bold mb-1">
+          {{ profil.prenom|default:"—" }} {{ profil.nom|default:"" }}
+        </h5>
+        <p class="text-muted small mb-3">@{{ user_django.username|default:"—" }}</p>
+        <div class="badge bg-primary bg-opacity-10 text-primary mb-3 px-3 py-2">
+          {{ profil.filiere|default:"Filière non renseignée" }}
+          {% if profil.filiere and profil.niveau %} • {% endif %}
+          {{ profil.niveau|default:"" }}
+        </div>
+
+        <hr class="border-light my-4">
+
+        <!-- Coordonnées -->
+        <div class="text-start">
+          <h6 class="fw-bold small text-uppercase text-muted mb-3">Coordonnées</h6>
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <i class="bi bi-envelope text-muted"></i>
+            <span class="small">{{ profil.email|default:"—" }}</span>
+          </div>
+          {% if profil.telephone %}
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <i class="bi bi-telephone text-muted"></i>
+            <span class="small">{{ profil.telephone }}</span>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="d-grid mt-4">
+          <a href="{% url 'modifier_profil' %}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil me-2"></i>Modifier le profil
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Colonne droite : configuration académique ────────────── -->
+  <div class="col-lg-8">
+
+    <!-- Biographie -->
+    <div class="card border-light shadow-sm mb-4">
+      <div class="card-body p-4">
+        <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
+          <i class="bi bi-file-person text-primary"></i> Biographie
+        </h6>
+        {% if profil.bio %}
+          <p class="text-muted small mb-0">{{ profil.bio }}</p>
+        {% else %}
+          <p class="text-muted small fst-italic mb-0">
+            Aucune biographie renseignée.
+            <a href="{% url 'modifier_profil' %}" class="text-primary">En ajouter une</a>
+          </p>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Compétences & Lacunes -->
+    <div class="row g-4 mb-4">
+
+      <!-- Je maîtrise -->
+      <div class="col-md-6">
+        <div class="card h-100 border-light shadow-sm">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                <i class="bi bi-lightbulb-fill text-success"></i> Je maîtrise
+              </h6>
+              <a href="{% url 'modifier_profil' %}" class="btn btn-sm btn-link text-primary p-0">
+                <i class="bi bi-pencil-square"></i>
+              </a>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+              {% for pf in points_forts %}
+                <span class="badge badge-skill px-3 py-2">{{ pf.domaine.nom }}</span>
+              {% empty %}
+                <p class="text-muted small fst-italic mb-0">
+                  Aucune matière renseignée.
+                </p>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- J'ai besoin d'aide -->
+      <div class="col-md-6">
+        <div class="card h-100 border-light shadow-sm">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-circle-fill text-danger"></i> J'ai besoin d'aide en
+              </h6>
+              <a href="{% url 'modifier_profil' %}" class="btn btn-sm btn-link text-primary p-0">
+                <i class="bi bi-pencil-square"></i>
+              </a>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+              {% for pf in points_faibles %}
+                <span class="badge badge-gap px-3 py-2">{{ pf.domaine.nom }}</span>
+              {% empty %}
+                <p class="text-muted small fst-italic mb-0">
+                  Aucune lacune renseignée.
+                </p>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Disponibilités -->
+    <div class="card border-light shadow-sm">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-bold mb-0 d-flex align-items-center gap-2">
+            <i class="bi bi-calendar-week-fill text-primary"></i> Mes disponibilités
+          </h6>
+          <a href="{% url 'modifier_profil' %}" class="btn btn-sm btn-link text-primary p-0">
+            <i class="bi bi-pencil-square"></i>
+          </a>
+        </div>
+        <p class="small text-muted mb-3">
+          Plages horaires où vous êtes disponible pour du mentorat.
+        </p>
+        <div class="table-responsive">
+          <table class="table table-bordered text-center align-middle small">
+            <thead class="bg-light">
+              <tr>
+                <th></th>
+                <th>Lun</th><th>Mar</th><th>Mer</th>
+                <th>Jeu</th><th>Ven</th><th>Sam</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for creneau in grille_disponibilites %}
+              <tr>
+                <td class="fw-medium text-muted bg-light">{{ creneau.label }}</td>
+                {% for jour in creneau.jours %}
+                <td class="avail-cell {% if jour.actif %}bg-primary bg-opacity-25 border-primary{% endif %}">
+                  {% if jour.actif %}<i class="bi bi-check-lg text-primary"></i>{% endif %}
+                </td>
+                {% endfor %}
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="7" class="text-muted fst-italic py-3">
+                  Aucune disponibilité renseignée.
+                  <a href="{% url 'modifier_profil' %}" class="text-primary">En ajouter</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.avail-cell { transition: background .2s; cursor: default; }
+.badge-gap  { background: rgba(229,57,53,.10); color: #b8302d; }
+</style>
+{% endblock %}
