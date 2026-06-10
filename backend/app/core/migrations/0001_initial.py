@@ -177,33 +177,35 @@ class Migration(migrations.Migration):
             name='Maitrise',
             fields=[
                 ('id', models.BigAutoField(primary_key=True, serialize=False)),
-                ('utilisateur', models.ForeignKey(db_column='utilisateur_id', on_delete=django.db.models.deletion.CASCADE, to='core.utilisateur')),  # Champ rajouté !
-                ('domaine', models.ForeignKey(db_column='domaine_id', on_delete=django.db.models.deletion.CASCADE, to='core.domaine')),  # Champ rajouté !
+                ('utilisateur', models.ForeignKey(db_column='utilisateur_id', on_delete=django.db.models.deletion.CASCADE, to='core.utilisateur')),
+                ('domaine', models.ForeignKey(db_column='domaine_id', on_delete=django.db.models.deletion.CASCADE, to='core.domaine')),
                 ('niveau_maitrise', models.CharField(max_length=50)),
             ],
             options={
                 'db_table': 'maitrise',
                 'managed': True,
+                'unique_together': {('utilisateur', 'domaine')},  # Ajouté !
             },
         ),
         migrations.CreateModel(
             name='Besoin',
             fields=[
                 ('id', models.BigAutoField(primary_key=True, serialize=False)),
-                ('utilisateur', models.ForeignKey(db_column='utilisateur_id', on_delete=django.db.models.deletion.CASCADE, to='core.utilisateur')),  # Champ rajouté !
-                ('domaine', models.ForeignKey(db_column='domaine_id', on_delete=django.db.models.deletion.CASCADE, to='core.domaine')),  # Champ rajouté !
+                ('utilisateur', models.ForeignKey(db_column='utilisateur_id', on_delete=django.db.models.deletion.CASCADE, to='core.utilisateur')),
+                ('domaine', models.ForeignKey(db_column='domaine_id', on_delete=django.db.models.deletion.CASCADE, to='core.domaine')),
                 ('niveau_priorite', models.SmallIntegerField()),
             ],
             options={
                 'db_table': 'besoin',
                 'managed': True,
+                'unique_together': {('utilisateur', 'domaine')},  # Ajouté !
             },
         ),
         migrations.CreateModel(
             name='DisponibiliteUtilisateur',
             fields=[
                 ('id', models.BigAutoField(primary_key=True, serialize=False)),
-                ('utilisateur', models.ForeignKey(db_column='utilisateur_id', on_delete=django.db.models.deletion.CASCADE, to='core.utilisateur')),  # Champ rajouté !
+                ('utilisateur', models.ForeignKey(db_column='utilisateur_id', on_delete=django.db.models.deletion.CASCADE, to='core.utilisateur')),
                 ('jour_semaine', models.IntegerField(db_column='jour_semaine')),
                 ('heure_debut', models.TimeField(db_column='heure_debut')),
                 ('heure_fin', models.TimeField(db_column='heure_fin')),
