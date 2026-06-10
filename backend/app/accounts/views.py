@@ -15,6 +15,11 @@ from app.core.models import AuthUser, Utilisateur, Domaine, Maitrise, Besoin
 from .forms import InscriptionForm, ConnexionForm, DemandeReinitialisationForm, NouveauMotDePasseForm
 
 def inscription_view(request):
+    """
+    Vue d'inscription fluide (Étape 1).
+    Pour simplifier l'onboarding locaux (soutenance), l'utilisateur est activé
+    immédiatement et redirigé de manière asynchrone et automatique vers l'Étape 2 (La filière).
+    """
     if request.method == 'POST':
         form = InscriptionForm(request.POST)
         if form.is_valid():
@@ -23,33 +28,24 @@ def inscription_view(request):
             # 1. Hachage du mot de passe
             user.password = make_password(form.cleaned_data['password'])
             
-            # 2. Remplir les contraintes NOT NULL de PostgreSQL pour l'utilisateur standard
+            # 2. Remplir les contraintes NOT NULL de PostgreSQL
             user.is_superuser = False
             user.is_staff = False
             user.date_joined = timezone.now()
-            
-            # 3. Le compte est désactivé en attendant la confirmation par email
-            user.is_active = False
-            
-            # 4. Sauvegarde finale dans PostgreSQL
+            user.is_active = True  # Activé immédiatement pour un onboarding direct et sans friction !
             user.save()
             
-            # 5. Génération du token d'activation
-            token = signing.dumps({'username': user.username})
-            uid = urlsafe_base64_encode(force_bytes(user.pk))
+            # Sauvegarde temporaire du téléphone dans la session pour l'onboarding profil
+            request.session['temp_telephone'] = request.POST.get('telephone', '')
             
-            # Construction du lien d'activation
-            domaine = request.get_host()
-            lien_activation = f"http://{domaine}/activer-compte/{uid}/{token}/"
+            # Authentification et connexion automatique
+            login(request, user)
+            request.session['verified_user_id'] = user.id
+            request.session['verified_user_email'] = user.email
+            request.session['onboarding_user_id'] = user.id
             
-            # Envoi de l'email
-            sujet = "Activez votre compte - MentorÉtude"
-            message_txt = f"Bonjour {user.first_name},\n\nMerci pour votre inscription ! Activez votre compte via ce lien : {lien_activation}"
-            
-            send_mail(sujet, message_txt, 'noreply@mentoretude.com', [user.email])
-            
-            messages.success(request, "Inscription réussie ! Un email de confirmation vous a été envoyé.")
-            return redirect('connexion')
+            messages.success(request, "Compte créé ! Complétons votre parcours universitaire.")
+            return redirect('etape_filiere')  # Redirection directe vers l'Étape 2 !
     else:
         form = InscriptionForm()
     return render(request, 'registration/inscription.html', {'form': form})
@@ -237,12 +233,16 @@ def etape_filiere_view(request):
         if not vrai_email:
             vrai_email = f"user_{user_django.id}@mentoretude.com"
 
+        # Récupération sécurisée du téléphone saisi à l'Étape 1 d'inscription
+        tel_saisi = request.session.get('temp_telephone') or f"Non renseigné {user_django.id}"
+
+        # Recherche ou création du profil avec le bon email garanti
         utilisateur_custom, created = Utilisateur.objects.get_or_create(
             email=vrai_email,
             defaults={
                 'nom': user_django.last_name if user_django.last_name else 'Nom',
                 'prenom': user_django.first_name if user_django.first_name else 'Prénom',
-                'telephone': f"Non renseigné {user_django.id}",
+                'telephone': tel_saisi,
                 'password_hash': user_django.password,
                 'filiere': filiere_choisie,
                 'niveau': niveau_choisi,
@@ -253,6 +253,7 @@ def etape_filiere_view(request):
         if not created:
             utilisateur_custom.filiere = filiere_choisie
             utilisateur_custom.niveau = niveau_choisi
+            utilisateur_custom.telephone = tel_saisi
             utilisateur_custom.save()
 
         request.session['verified_user_email'] = vrai_email
@@ -297,8 +298,12 @@ def etape_maitrise_view(request):
 
         if 'onboarding_user_id' in request.session:
             del request.session['onboarding_user_id']
-            messages.success(request, "Votre profil a été configuré avec succès ! Connectez-vous.")
-            return redirect('connexion')
+            # On log l'utilisateur pour qu'il arrive directement sur son dashboard après onboarding !
+            login(request, user_django)
+            request.session['verified_user_id'] = user_django.id
+            request.session['verified_user_email'] = user_django.email
+            messages.success(request, "Votre profil a été configuré avec succès ! Bienvenue sur MentorLink.")
+            return redirect('dashboard')
         else:
             messages.success(request, "Vos domaines de compétences ont été mis à jour !")
             return redirect('profil')
