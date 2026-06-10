@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib import messages as django_messages
 from app.core.models import Utilisateur
 from app.messaging.models import Conversation, Message
-from app.mentorat.models import RelationMentorat
+from app.mentorat.models import RelationMentorat, Reponse
 
 def message_view(request):
     # 1. Vérification de la connexion
@@ -17,7 +17,44 @@ def message_view(request):
         django_messages.error(request, "Profil utilisateur introuvable.")
         return redirect('connexion')
 
-    # 2. GESTION DU POST : Envoi d'un message
+    # 2. AUTOMATION : Création automatique d'une conversation si ?contact=ID est fourni dans l'URL
+    contact_id = request.GET.get('contact')
+    if contact_id:
+        contact_user = Utilisateur.objects.filter(id=contact_id).first()
+        if contact_user and contact_user != profil:
+            # Recherche d'une relation existante dans les deux sens
+            relation = RelationMentorat.objects.filter(
+                mentor=profil, mentore=contact_user
+            ).first() or RelationMentorat.objects.filter(
+                mentor=contact_user, mentore=profil
+            ).first()
+            
+            if not relation:
+                # Création d'une réponse de liaison (requise par la contrainte NOT NULL de votre base de données SQL)
+                reponse_liaison = Reponse.objects.create(
+                    publication=None,  # Liaison directe sans publication spécifique
+                    auteur=profil,
+                    message="Liaison automatique initiée depuis le profil",
+                    statut='ACCEPTEE'
+                )
+                
+                # Création d'une relation de mentorat active
+                relation = RelationMentorat.objects.create(
+                    mentor=contact_user,  # Le contact externe est considéré comme le mentor
+                    mentore=profil,       # L'initiateur est considéré comme le mentoré
+                    reponse=reponse_liaison,
+                    statut='ACTIVE'
+                )
+                
+            # Recherche ou création d'une conversation liée à cette relation
+            conversation = Conversation.objects.filter(relation=relation).first()
+            if not conversation:
+                conversation = Conversation.objects.create(relation=relation)
+                
+            # Redirection directe vers la fenêtre de chat active !
+            return redirect(f"/messages/?conv={conversation.id}")
+
+    # 3. GESTION DU POST : Envoi d'un message
     if request.method == 'POST':
         conv_id = request.POST.get('conv_id')
         contenu = request.POST.get('contenu')
@@ -36,8 +73,7 @@ def message_view(request):
                 # Redirection vers la même page avec le paramètre de conversation active
                 return redirect(f"/messages/?conv={conv_id}")
 
-    # 3. RÉCUPÉRATION DE TOUTES LES CONVERSATIONS DE L'UTILISATEUR (MENTOR OU MENTORÉ)
-    # On filtre les conversations via la relation de mentorat associée
+    # 4. RÉCUPÉRATION DE TOUTES LES CONVERSATIONS DE L'UTILISATEUR (MENTOR OU MENTORÉ)
     db_conversations = Conversation.objects.filter(
         relation__mentor=profil
     ) | Conversation.objects.filter(
@@ -47,16 +83,13 @@ def message_view(request):
     # On structure les conversations pour le template HTML
     liste_conversations = []
     for conv in db_conversations:
-        # L'interlocuteur est l'autre personne de la relation
         if conv.relation.mentor == profil:
             interlocuteur = conv.relation.mentore
         else:
             interlocuteur = conv.relation.mentor
             
-        # Récupération du dernier message
         dernier_msg = conv.messages.order_by('-created_at').first()
         
-        # Adaptation des propriétés attendues par votre template (date, contenu, lu)
         dernier_msg_data = None
         if dernier_msg:
             dernier_msg_data = {
@@ -64,11 +97,8 @@ def message_view(request):
                 'date': dernier_msg.created_at,
             }
             
-        # Nombre de messages non lus pour cet interlocuteur
         nb_non_lus = conv.messages.filter(expediteur=interlocuteur, lu=False).count()
-        
-        # Un attribut factice "en_ligne" (votre template l'attend, on le met par défaut à True pour la démo)
-        interlocuteur.en_ligne = True  # Vous pouvez lier cela à un statut de session plus tard
+        interlocuteur.en_ligne = True
         
         liste_conversations.append({
             'id': conv.id,
@@ -77,25 +107,20 @@ def message_view(request):
             'nb_non_lus': nb_non_lus
         })
 
-    # 4. GESTION DE LA CONVERSATION ACTIVE (SÉLECTIONNÉE)
+    # 5. GESTION DE LA CONVERSATION ACTIVE (SÉLECTIONNÉE)
     conversation_active = None
     messages_conv = []
     
     active_conv_id = request.GET.get('conv')
     if active_conv_id:
-        # On recherche la conversation demandée
         conv_active_obj = Conversation.objects.filter(id=active_conv_id).first()
         
-        # Sécurité : On s'assure que l'utilisateur connecté fait bien partie de cette conversation
         if conv_active_obj and (conv_active_obj.relation.mentor == profil or conv_active_obj.relation.mentore == profil):
-            
-            # Définir l'interlocuteur de la conversation active
             if conv_active_obj.relation.mentor == profil:
                 interlocuteur_active = conv_active_obj.relation.mentore
             else:
                 interlocuteur_active = conv_active_obj.relation.mentor
                 
-            # Marquer tous les messages reçus dans cette conversation comme lus
             conv_active_obj.messages.filter(expediteur=interlocuteur_active, lu=False).update(lu=True)
             
             conversation_active = {
@@ -103,7 +128,6 @@ def message_view(request):
                 'interlocuteur': interlocuteur_active
             }
             
-            # Récupérer l'historique des messages pour l'affichage (ordonné du plus ancien au plus récent)
             db_messages = conv_active_obj.messages.order_by('created_at')
             for msg in db_messages:
                 messages_conv.append({

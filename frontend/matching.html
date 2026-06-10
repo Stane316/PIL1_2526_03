@@ -163,7 +163,7 @@
           </div>
 
           <!-- Bouton contacter -->
-          <a href="{% url 'message' %}" class="btn btn-primary w-100">
+          <a href="{% url 'message' %}?contact={{ match.utilisateur.id }}" class="btn btn-primary w-100">
             <i class="bi bi-chat-left-text me-2"></i>Contacter ce mentor
           </a>
 
@@ -225,8 +225,8 @@
           </div>
 
           <!-- Bouton contacter -->
-          <a href="{% url 'message' %}" class="btn btn-outline-primary w-100">
-            <i class="bi bi-chat-left-text me-2"></i>Proposer mon aide
+          <a href="{% url 'message' %}?contact={{ match.utilisateur.id }}" class="btn btn-outline-primary w-100">
+             <i class="bi bi-chat-left-text me-2"></i>Proposer mon aide
           </a>
 
         </div>

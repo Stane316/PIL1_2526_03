@@ -103,8 +103,8 @@
               <i class="bi bi-geo-alt-fill text-primary"></i> Présentiel (IFRI)
             {% endif %}
           </span>
-          <a href="{% url 'message' %}" class="btn btn-sm btn-outline-primary px-3">
-            Répondre
+          <a href="{% url 'message' %}?contact={{ offre.auteur.id }}" class="btn btn-sm btn-outline-primary px-3">
+               Répondre
           </a>
         </div>
 

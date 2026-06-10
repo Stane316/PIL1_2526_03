@@ -99,8 +99,8 @@
               Disponibilité non précisée
             {% endif %}
           </span>
-          <a href="{% url 'message' %}" class="btn btn-sm btn-outline-primary px-3">
-            Proposer mon aide
+          <a href="{% url 'message' %}?contact={{ demande.auteur.id }}" class="btn btn-sm btn-outline-primary px-3">
+               Proposer mon aide
           </a>
         </div>
 
