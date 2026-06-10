@@ -76,6 +76,17 @@
       <form method="POST" action="">
         {% csrf_token %}
 
+        <!-- Live Search Bar to filter through 90 subjects instantly! -->
+        <div class="mb-4">
+          <div class="input-group">
+            <span class="input-group-text bg-white"><i class="bi bi-search text-muted"></i></span>
+            <input type="text" class="form-control" id="searchMatiere" placeholder="Rechercher une matière (ex: Python, SQL, Réseaux...)" title="Rechercher une matière">
+          </div>
+          <div class="form-text text-muted small mt-1">
+            Saisissez le nom d'une matière pour la filtrer instantanément dans la liste ci-dessous.
+          </div>
+        </div>
+
         <div class="d-flex flex-column gap-3 mb-5">
 
           {% for domaine in domaines_custom %}
@@ -179,6 +190,19 @@ function updateCard(domaineId, statut) {
   const detailsFaible = document.getElementById('details-faible-' + domaineId);
   if (detailsFort)   detailsFort.classList.toggle('d-none',   statut !== 'fort');
   if (detailsFaible) detailsFaible.classList.toggle('d-none', statut !== 'faible');
+}
+
+// Filtrage dynamique en direct des 90 matières pour éliminer la friction
+const searchMatiere = document.getElementById('searchMatiere');
+if (searchMatiere) {
+  searchMatiere.addEventListener('input', function () {
+    const q = this.value.toLowerCase().trim();
+    document.querySelectorAll('.card.border-light.shadow-sm').forEach(function (card) {
+      const name = card.querySelector('h6')?.textContent.toLowerCase() || '';
+      const desc = card.querySelector('.text-muted.small')?.textContent.toLowerCase() || '';
+      card.style.display = (name.includes(q) || desc.includes(q)) ? '' : 'none';
+    });
+  });
 }
 </script>
 

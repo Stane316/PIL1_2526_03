@@ -8,10 +8,12 @@ from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.core import signing
 from django.core.files.storage import FileSystemStorage
-from django.contrib.auth import login, logout, authenticate  # IMPORTATION DES SESSIONS NATIVES DE DJANGO
+from django.contrib.auth import login, logout, authenticate
 from django.contrib.auth.models import User
+from django.views.decorators.csrf import csrf_exempt  # IMPORTATION DE SÉCURITÉ POUR L'API CHAT
+from datetime import time, timedelta
 
-from app.core.models import AuthUser, Utilisateur, Domaine, Maitrise, Besoin
+from app.core.models import AuthUser, Utilisateur, Domaine, Maitrise, Besoin, DisponibiliteUtilisateur
 from .forms import InscriptionForm, ConnexionForm, DemandeReinitialisationForm, NouveauMotDePasseForm
 
 def inscription_view(request):
@@ -227,7 +229,6 @@ def activer_compte_view(request, uidb64, token):
             AuthUser.objects.filter(pk=user.pk).update(is_active=True)
             user.is_active = True
         
-        # Identification asynchrone sécurisée pour l'onboarding
         login(request, user)
         request.session['verified_user_id'] = user.id
         request.session['verified_user_email'] = user.email
@@ -376,6 +377,7 @@ def modifier_profil_view(request):
         return redirect('profil')
 
     if request.method == 'POST':
+        # 1. Récupération des données du formulaire textuel
         first_name = request.POST.get('prenom') or user_auth.first_name
         last_name = request.POST.get('nom') or user_auth.last_name
         telephone = request.POST.get('telephone')
@@ -388,12 +390,41 @@ def modifier_profil_view(request):
             url_image = fs.url(nom_fichier)
             profil_metier.photo_profil = url_image
 
+        # 2. Enregistrement en base de données unifiée
         AuthUser.objects.filter(id=user_id).update(first_name=first_name, last_name=last_name)
+        
+        profil_metier.prenom = first_name  # CORRIGÉ : Met à jour la table custom utilisateur !
+        profil_metier.nom = last_name      # CORRIGÉ : Met à jour la table custom utilisateur !
         profil_metier.telephone = telephone
         profil_metier.bio = bio
         profil_metier.save()
 
-        messages.success(request, "Votre profil a été mis à jour avec succès !")
+        # 3. Enregistrement dynamique de la grille de disponibilités hebdomadaires
+        # On supprime d'abord les anciens enregistrements pour cette personne
+        DisponibiliteUtilisateur.objects.filter(utilisateur=profil_metier).delete()
+        
+        jours_map = {'lun': 1, 'mar': 2, 'mer': 3, 'jeu': 4, 'ven': 5, 'sam': 6, 'dim': 7}
+        creneaux_heures = {
+            '08h-10h': (time(8,0), time(10,0)),
+            '10h-12h': (time(10,0), time(12,0)),
+            '14h-16h': (time(14,0), time(16,0)),
+            '16h-18h': (time(16,0), time(18,0)),
+            '18h-20h': (time(18,0), time(20,0)),
+        }
+        
+        # On parcourt chaque combinaison possible soumise en POST par les cases à cocher
+        for label, (h_debut, h_fin) in creneaux_heures.items():
+            for j_slug, j_num in jours_map.items():
+                checkbox_name = f"dispo_{label}_{j_slug}"
+                if request.POST.get(checkbox_name) == '1':
+                    DisponibiliteUtilisateur.objects.create(
+                        utilisateur=profil_metier,
+                        jour_semaine=j_num,
+                        heure_debut=h_debut,
+                        heure_fin=h_fin
+                    )
+
+        messages.success(request, "Votre profil et vos disponibilités ont été mis à jour avec succès !")
         return redirect('profil')
 
     context = {
