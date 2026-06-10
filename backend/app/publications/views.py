@@ -41,30 +41,52 @@ def offres_view(request):
     # ON FILTRE UNIQUEMENT les matières maîtrisées par CET utilisateur
     points_forts = Maitrise.objects.filter(utilisateur=profil_metier)
     
-    # 1. Récupération des offres de la base de données
-    db_mes_offres = Demande.objects.filter(utilisateur=profil_metier, type='OFFRE').order_by('-date_publication')
-    db_toutes_les_offres = Demande.objects.filter(type='OFFRE').order_by('-date_publication')
-
-    # 2. Formatage des offres pour correspondre au template HTML unifié
-    mes_offres_formatees = [formater_publication(o) for o in db_mes_offres]
-    toutes_les_offres_formatees = [formater_publication(o) for o in db_toutes_les_offres]
-
+    # 1. Traitement de la création d'offre (Saisie POST par l'utilisateur)
     if request.method == 'POST':
-        ids_choisis = request.POST.getlist('matieres_fortes')
-        if ids_choisis:
+        titre = request.POST.get('titre')
+        matiere_nom = request.POST.get('matiere')
+        description = request.POST.get('description')
+        modalite = request.POST.get('modalite', 'en_ligne')
+        
+        # En base de données, la modalité (mode_mentorat) reçoit 'EN_LIGNE' ou 'PRESENTIEL'
+        mode_mentorat = 'EN_LIGNE' if modalite == 'en_ligne' else 'PRESENTIEL'
+        
+        if titre and matiere_nom:
+            # Création de l'offre
             nouvelle_offre = Demande.objects.create(
                 utilisateur=profil_metier, 
                 type='OFFRE', 
                 statut='OUVERTE',
-                titre="Offre d'aide",
-                description=request.POST.get('description', "Je propose mon aide pour accompagner les étudiants sur ces matières."),
-                mode_mentorat=request.POST.get('mode_mentorat', 'EN_LIGNE')
+                titre=titre,
+                description=description,
+                mode_mentorat=mode_mentorat
             )
-            for m_id in ids_choisis:
-                domaine_obj = Domaine.objects.filter(id=m_id).first()
-                if domaine_obj:
-                    DemandeDomaine.objects.create(demande=nouvelle_offre, domaine=domaine_obj)
+            # Recherche de la matière (Domaine) par son nom (car soumis en texte brut par le template)
+            domaine_obj = Domaine.objects.filter(nom=matiere_nom).first()
+            if domaine_obj:
+                DemandeDomaine.objects.create(demande=nouvelle_offre, domaine=domaine_obj)
+            
+            # Facultatif : Enregistrement de la disponibilité préférée si renseignée
+            dispo_texte = request.POST.get('disponibilite')
+            if dispo_texte:
+                # Création d'une disponibilité par défaut liée (Samedi matin)
+                DemandeDisponibilite.objects.create(
+                    demande=nouvelle_offre,
+                    jour_semaine=6,
+                    heure_debut='08:00:00',
+                    heure_fin='12:00:00'
+                )
+                
+            django_messages.success(request, "Votre offre d'aide a été publiée avec succès !")
             return redirect('offres')
+
+    # 2. Récupération des offres de la base de données
+    db_mes_offres = Demande.objects.filter(utilisateur=profil_metier, type='OFFRE').order_by('-date_publication')
+    db_toutes_les_offres = Demande.objects.filter(type='OFFRE').order_by('-date_publication')
+
+    # 3. Formatage des offres pour correspondre au template HTML unifié
+    mes_offres_formatees = [formater_publication(o) for o in db_mes_offres]
+    toutes_les_offres_formatees = [formater_publication(o) for o in db_toutes_les_offres]
 
     return render(request, 'offres.html', {
         'profil': profil_metier,
@@ -91,30 +113,47 @@ def demandes_view(request):
     # ON FILTRE UNIQUEMENT les besoins (points faibles) de CET utilisateur
     points_faibles = Besoin.objects.filter(utilisateur=profil_metier)
     
-    # 1. Récupération des demandes de la base de données
-    db_mes_demandes = Demande.objects.filter(utilisateur=profil_metier, type='DEMANDE').order_by('-date_publication')
-    db_toutes_les_demandes = Demande.objects.filter(type='DEMANDE').order_by('-date_publication')
-
-    # 2. Formatage des demandes pour correspondre au template HTML unifié
-    mes_demandes_formatees = [formater_publication(d) for d in db_mes_demandes]
-    toutes_les_demandes_formatees = [formater_publication(d) for d in db_toutes_les_demandes]
-
+    # 1. Traitement de la création de demande (Saisie POST par l'utilisateur)
     if request.method == 'POST':
-        ids_choisis = request.POST.getlist('matieres_faibles')
-        if ids_choisis:
+        titre = request.POST.get('titre')
+        matiere_nom = request.POST.get('matiere')
+        description = request.POST.get('description')
+        dispo_texte = request.POST.get('disponibilite')
+        
+        if titre and matiere_nom:
+            # Création de la demande
             nouvelle_demande = Demande.objects.create(
                 utilisateur=profil_metier, 
                 type='DEMANDE', 
                 statut='OUVERTE',
-                titre="Demande d'aide",
-                description=request.POST.get('description', "J'ai besoin d'accompagnement sur ces matières pour m'améliorer."),
-                mode_mentorat=request.POST.get('mode_mentorat', 'EN_LIGNE')
+                titre=titre,
+                description=description,
+                mode_mentorat='EN_LIGNE'
             )
-            for m_id in ids_choisis:
-                domaine_obj = Domaine.objects.filter(id=m_id).first()
-                if domaine_obj:
-                    DemandeDomaine.objects.create(demande=nouvelle_demande, domaine=domaine_obj)
+            # Recherche de la matière (Domaine) par son nom
+            domaine_obj = Domaine.objects.filter(nom=matiere_nom).first()
+            if domaine_obj:
+                DemandeDomaine.objects.create(demande=nouvelle_demande, domaine=domaine_obj)
+            
+            # Sauvegarde de la disponibilité facultative
+            if dispo_texte:
+                DemandeDisponibilite.objects.create(
+                    demande=nouvelle_demande,
+                    jour_semaine=6,
+                    heure_debut='08:00:00',
+                    heure_fin='12:00:00'
+                )
+                
+            django_messages.success(request, "Votre demande d'aide a été publiée avec succès !")
             return redirect('demandes')
+
+    # 2. Récupération des demandes de la base de données
+    db_mes_demandes = Demande.objects.filter(utilisateur=profil_metier, type='DEMANDE').order_by('-date_publication')
+    db_toutes_les_demandes = Demande.objects.filter(type='DEMANDE').order_by('-date_publication')
+
+    # 3. Formatage des demandes pour correspondre au template HTML unifié
+    mes_demandes_formatees = [formater_publication(d) for d in db_mes_demandes]
+    toutes_les_demandes_formatees = [formater_publication(d) for d in db_toutes_les_demandes]
 
     return render(request, 'demandes.html', {
         'profil': profil_metier,
