@@ -187,5 +187,14 @@ class Besoin(models.Model):
         db_table = 'besoin'
         unique_together = (('utilisateur', 'domaine'),)
 
+class DisponibiliteUtilisateur(models.Model):
+    id = models.BigAutoField(primary_key=True)
+    utilisateur = models.ForeignKey(Utilisateur, models.CASCADE, db_column='utilisateur_id')
+    jour_semaine = models.IntegerField(db_column='jour_semaine')  # 1 (Lundi) à 7 (Dimanche)
+    heure_debut = models.TimeField(db_column='heure_debut')
+    heure_fin = models.TimeField(db_column='heure_fin')
 
+    class Meta:
+        managed = True
+        db_table = 'disponibilite_utilisateur'
         
