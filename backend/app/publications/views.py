@@ -15,6 +15,16 @@ def formater_publication(pub):
     pub_domaine = DemandeDomaine.objects.filter(demande=pub).first()
     matiere_nom = pub_domaine.domaine.nom if (pub_domaine and pub_domaine.domaine) else "Général"
     
+    # 2. Récupération d'une disponibilité textuelle formatée pour l'affichage
+    pub_dispo = DemandeDisponibilite.objects.filter(demande=pub).first()
+    dispo_libelle = "Disponibilité non précisée"
+    if pub_dispo:
+        jours_map = {1: 'Lundi', 2: 'Mardi', 3: 'Mercredi', 4: 'Jeudi', 5: 'Vendredi', 6: 'Samedi', 7: 'Dimanche'}
+        jour_nom = jours_map.get(pub_dispo.jour_semaine, 'Samedi')
+        moments_map = {'08:00:00': 'matin', '14:00:00': 'après-midi', '18:00:00': 'soir'}
+        moment_nom = moments_map.get(str(pub_dispo.heure_debut), 'matin')
+        dispo_libelle = f"{jour_nom} {moment_nom}"
+        
     return {
         'id': pub.id,
         'matiere': matiere_nom,
@@ -22,8 +32,48 @@ def formater_publication(pub):
         'titre': pub.titre,
         'description': pub.description,
         'auteur': pub.utilisateur,  # pub.utilisateur possède prenom, nom, photo_profil
-        'modalite': 'en_ligne' if pub.mode_mentorat == 'EN_LIGNE' else 'presentiel'
+        'modalite': 'en_ligne' if pub.mode_mentorat == 'EN_LIGNE' else 'presentiel',
+        'disponibilite': dispo_libelle
     }
+
+def enregistrer_disponibilite_texte(demande_obj, dispo_texte):
+    """
+    Helper intelligent d'analyse :
+    Analyse le texte saisi de façon libre par l'étudiant (ex: 'Lundi soir' ou 'Samedi matin')
+    et l'enregistre sous forme d'une ligne structurée et requêtable dans DemandeDisponibilite.
+    """
+    if not dispo_texte:
+        return
+        
+    text = dispo_texte.lower().strip()
+    
+    # Détermination du jour de la semaine
+    jour = 6  # Samedi par défaut
+    if 'lun' in text: jour = 1
+    elif 'mar' in text: jour = 2
+    elif 'mer' in text: jour = 3
+    elif 'jeu' in text: jour = 4
+    elif 'ven' in text: jour = 5
+    elif 'sam' in text: jour = 6
+    elif 'dim' in text: jour = 7
+    
+    # Détermination du créneau horaire
+    h_debut = '08:00:00'
+    h_fin = '12:00:00'
+    if 'soir' in text or 'nuit' in text:
+        h_debut = '18:00:00'
+        h_fin = '21:00:00'
+    elif 'aprem' in text or 'midi' in text or 'après' in text:
+        h_debut = '14:00:00'
+        h_fin = '18:00:00'
+        
+    # Création de l'enregistrement de disponibilité
+    DemandeDisponibilite.objects.create(
+        demande=demande_obj,
+        jour_semaine=jour,
+        heure_debut=h_debut,
+        heure_fin=h_fin
+    )
 
 def offres_view(request):
     # Sécurité : On récupère l'ID vérifié stocké lors de la connexion
@@ -47,6 +97,7 @@ def offres_view(request):
         matiere_nom = request.POST.get('matiere')
         description = request.POST.get('description')
         modalite = request.POST.get('modalite', 'en_ligne')
+        dispo_texte = request.POST.get('disponibilite')
         
         # En base de données, la modalité (mode_mentorat) reçoit 'EN_LIGNE' ou 'PRESENTIEL'
         mode_mentorat = 'EN_LIGNE' if modalite == 'en_ligne' else 'PRESENTIEL'
@@ -61,21 +112,14 @@ def offres_view(request):
                 description=description,
                 mode_mentorat=mode_mentorat
             )
-            # Recherche de la matière (Domaine) par son nom (car soumis en texte brut par le template)
+            # Recherche de la matière (Domaine) par son nom
             domaine_obj = Domaine.objects.filter(nom=matiere_nom).first()
             if domaine_obj:
                 DemandeDomaine.objects.create(demande=nouvelle_offre, domaine=domaine_obj)
             
-            # Facultatif : Enregistrement de la disponibilité préférée si renseignée
-            dispo_texte = request.POST.get('disponibilite')
+            # Analyse intelligente et sauvegarde de la disponibilité spécifiée
             if dispo_texte:
-                # Création d'une disponibilité par défaut liée (Samedi matin)
-                DemandeDisponibilite.objects.create(
-                    demande=nouvelle_offre,
-                    jour_semaine=6,
-                    heure_debut='08:00:00',
-                    heure_fin='12:00:00'
-                )
+                enregistrer_disponibilite_texte(nouvelle_offre, dispo_texte)
                 
             django_messages.success(request, "Votre offre d'aide a été publiée avec succès !")
             return redirect('offres')
@@ -135,14 +179,9 @@ def demandes_view(request):
             if domaine_obj:
                 DemandeDomaine.objects.create(demande=nouvelle_demande, domaine=domaine_obj)
             
-            # Sauvegarde de la disponibilité facultative
+            # Analyse intelligente et sauvegarde de la disponibilité spécifiée
             if dispo_texte:
-                DemandeDisponibilite.objects.create(
-                    demande=nouvelle_demande,
-                    jour_semaine=6,
-                    heure_debut='08:00:00',
-                    heure_fin='12:00:00'
-                )
+                enregistrer_disponibilite_texte(nouvelle_demande, dispo_texte)
                 
             django_messages.success(request, "Votre demande d'aide a été publiée avec succès !")
             return redirect('demandes')
