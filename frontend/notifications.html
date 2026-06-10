@@ -14,6 +14,9 @@
 .notif-icon-other { background: rgba(245,158,11,.1); color: #b45309; }
 </style>
 
+{% include 'header.html' %}
+{% include 'navbar.html' %}
+
 <!-- ── En-tête avec action "tout marquer lu" ─────────────────────── -->
 <div class="d-flex justify-content-between align-items-center mb-4">
   <div>
@@ -22,10 +25,10 @@
     </p>
   </div>
   {% if notifications %}
-  <form method="POST" action="{% url 'notifications' %}">
+  <form method="POST" action="{% url 'notifications' %}" id="markAllReadForm">
     {% csrf_token %}
     <input type="hidden" name="action" value="tout_marquer_lu">
-    <button type="submit" class="btn btn-sm btn-ghost">
+    <button type="submit" class="btn btn-sm btn-ghost" title="Tout marquer comme lu">
       <i class="bi bi-check2-all me-1"></i>Tout marquer comme lu
     </button>
   </form>
@@ -33,8 +36,8 @@
 </div>
 
 <!-- ── Liste des notifications ───────────────────────────────────── -->
-{% if notifications %}
-  <div class="d-flex flex-column gap-3">
+<div class="d-flex flex-column gap-3" id="notifListContainer">
+  {% if notifications %}
     {% for notif in notifications %}
     <div class="card border-light shadow-sm {% if not notif.lue %}border-start border-primary border-3{% endif %}">
       <div class="card-body d-flex align-items-start gap-3 p-3">
@@ -94,20 +97,119 @@
       </div>
     </div>
     {% endfor %}
-  </div>
+  {% else %}
+    <!-- État vide -->
+    <div class="text-center py-5">
+      <i class="bi bi-bell-slash fs-1 text-muted d-block mb-3"></i>
+      <h6 class="fw-bold">Aucune notification pour l'instant.</h6>
+      <p class="text-muted small">
+        Vous serez notifié lorsqu'un étudiant correspond à votre profil, vous envoie un message, ou répond à votre offre ou demande.
+      </p>
+      <a href="{% url 'matching' %}" class="btn btn-outline-primary btn-sm mt-2">
+        <i class="bi bi-bullseye me-1"></i>Explorer le matching
+      </a>
+    </div>
+  {% endif %}
+</div>
 
-{% else %}
-  <!-- État vide -->
-  <div class="text-center py-5">
-    <i class="bi bi-bell-slash fs-1 text-muted d-block mb-3"></i>
-    <h6 class="fw-bold">Aucune notification pour l'instant.</h6>
-    <p class="text-muted small">
-      Vous serez notifié lorsqu'un étudiant correspond à votre profil, vous envoie un message, ou répond à votre offre ou demande.
-    </p>
-    <a href="{% url 'matching' %}" class="btn btn-outline-primary btn-sm mt-2">
-      <i class="bi bi-bullseye me-1"></i>Explorer le matching
-    </a>
-  </div>
-{% endif %}
+{% endblock %}
 
+{% block extra_js %}
+<script>
+  // ============================================================
+  // LOGIQUE DE NOTIFICATIONS ASYNCHRONES EN DIRECT (REAL-TIME POLLING)
+  // ============================================================
+  function loadNotificationsRealTime() {
+    fetch('/notifications/api/')
+    .then(response => response.json())
+    .then(data => {
+      const container = document.getElementById('notifListContainer');
+      if (!container) return;
+
+      if (data.notifications.length === 0) {
+        container.innerHTML = `
+          <div class="text-center py-5">
+            <i class="bi bi-bell-slash fs-1 text-muted d-block mb-3"></i>
+            <h6 class="fw-bold">Aucune notification pour l'instant.</h6>
+            <p class="text-muted small">
+              Vous serez notifié lorsqu'un étudiant correspond à votre profil, vous envoie un message, ou répond à votre offre ou demande.
+            </p>
+            <a href="{% url 'matching' %}" class="btn btn-outline-primary btn-sm mt-2">
+              <i class="bi bi-bullseye me-1"></i>Explorer le matching
+            </a>
+          </div>
+        `;
+        return;
+      }
+
+      let html = '';
+      data.notifications.forEach(notif => {
+        let iconHtml = '';
+        let btnHtml = '';
+        let iconClass = 'notif-icon-other';
+
+        if (notif.type === 'match') {
+          iconClass = 'notif-icon-match';
+          iconHtml = '<i class="bi bi-bullseye"></i>';
+          btnHtml = `<a href="{% url 'matching' %}" class="btn btn-xs btn-outline-primary btn-sm mt-1">Voir le matching</a>`;
+        } else if (notif.type === 'message') {
+          iconClass = 'notif-icon-message';
+          iconHtml = '<i class="bi bi-chat-left-text-fill"></i>';
+          btnHtml = `<a href="{% url 'message' %}" class="btn btn-xs btn-outline-primary btn-sm mt-1">Lire le message</a>`;
+        } else if (notif.type === 'offre') {
+          iconClass = 'notif-icon-offre';
+          iconHtml = '<i class="bi bi-hand-thumbs-up-fill"></i>';
+          btnHtml = `<a href="{% url 'offres' %}" class="btn btn-xs btn-outline-primary btn-sm mt-1">Voir les offres</a>`;
+        } else if (notif.type === 'demande') {
+          iconClass = 'notif-icon-demande';
+          iconHtml = '<i class="bi bi-search-heart-fill"></i>';
+          btnHtml = `<a href="{% url 'demandes' %}" class="btn btn-xs btn-outline-primary btn-sm mt-1">Voir les demandes</a>`;
+        } else {
+          iconHtml = '<i class="bi bi-bell-fill"></i>';
+        }
+
+        html += `
+          <div class="card border-light shadow-sm ${!notif.lue ? 'border-start border-primary border-3' : ''}">
+            <div class="card-body d-flex align-items-start gap-3 p-3">
+
+              <!-- Icône dynamique -->
+              <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 ${iconClass}"
+                   style="width:42px;height:42px;">
+                ${iconHtml}
+              </div>
+
+              <!-- Contenu -->
+              <div class="flex-grow-1">
+                <div class="d-flex justify-content-between align-items-start">
+                  <p class="mb-1 small ${!notif.lue ? 'fw-semibold text-dark' : 'text-muted'}">
+                    ${notif.contenu}
+                  </p>
+                  <span class="text-muted ms-3 flex-shrink-0" style="font-size:.7rem;white-space:nowrap;">
+                    ${notif.date}
+                  </span>
+                </div>
+                ${btnHtml}
+              </div>
+
+              <!-- Point bleu non lu -->
+              ${!notif.lue ? '<span class="rounded-circle bg-primary flex-shrink-0 mt-1" style="width:8px;height:8px;display:inline-block;"></span>' : ''}
+
+            </div>
+          </div>
+        `;
+      });
+
+      // On compare de manière sommaire (pour garder la fluidité et éviter de sauter le scroll)
+      if (container.dataset.lastCount !== data.notifications.length.toString()) {
+        container.innerHTML = html;
+        container.dataset.lastCount = data.notifications.length.toString();
+      }
+    });
+  }
+
+  // Premier chargement de sécurité
+  loadNotificationsRealTime();
+  // Polling toutes les 4 secondes
+  setInterval(loadNotificationsRealTime, 4000);
+</script>
 {% endblock %}

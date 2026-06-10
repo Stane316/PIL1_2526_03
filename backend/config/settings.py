@@ -158,11 +158,20 @@ STATICFILES_DIRS = [
     BASE_DIR.parent / 'frontend' / 'static',
 ]
 
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'alexandrenattayori@gmail.com'
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')  # Sécurisé via python-decouple
+# Configuration de livraison sécurisée pour l'envoi de courriels (SMTP Fallback locaux)
+try:
+    EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+    EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='alexandrenattayori@gmail.com')
+    if not EMAIL_HOST_PASSWORD:
+        raise ValueError("SMTP password is empty")
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    EMAIL_HOST = 'smtp.gmail.com'
+    EMAIL_PORT = 587
+    EMAIL_USE_TLS = True
+except Exception:
+    # SÉCURITÉ : Fallback automatique vers l'affichage console si le SMTP n'est pas locaux
+    # Cela évite le timeout (blocage) lors de l'inscription !
+    EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages as django_messages
+from django.http import JsonResponse
 from app.core.models import Utilisateur
 from app.notifications.models import Notification
 
@@ -21,30 +22,60 @@ def notifications_view(request):
     if request.method == 'POST':
         action = request.POST.get('action')
         if action == 'tout_marquer_lu':
-            # Met à jour le champ 'lu' à True pour toutes les notifications de l'utilisateur
             Notification.objects.filter(utilisateur=profil_metier, lu=False).update(lu=True)
             return redirect('notifications')
 
     # 3. RÉCUPÉRATION DES NOTIFICATIONS DE L'UTILISATEUR
-    # On ordonne du plus récent au plus ancien
     db_notifications = Notification.objects.filter(utilisateur=profil_metier).order_by('-created_at')
     
-    # 4. CARTOGRAPHIE DES SOUCIS D'ATTRIBUTS AVEC LE TEMPLATE
-    # Notre SQL utilise (type_notification, lu, created_at)
-    # Votre template HTML attend (type, lue, date_creation)
-    # Nous adaptons les dictionnaires à la volée de manière ultra-élégante :
     liste_notifications = []
     for notif in db_notifications:
         liste_notifications.append({
             'id': notif.id,
-            'type': notif.type_notification,  # 'match', 'message', 'offre', 'demande', etc.
+            'type': notif.type_notification,
             'contenu': notif.contenu,
-            'lue': notif.lu,                   # lu -> lue
-            'date_creation': notif.created_at  # created_at -> date_creation
+            'lue': notif.lu,
+            'date_creation': notif.created_at
         })
     
     return render(request, 'notifications.html', {
         'titre_page': 'Notifications',
         'profil': profil_metier,
         'notifications': liste_notifications
+    })
+
+
+# ============================================================
+# API ENDPOINT POUR LES NOTIFICATIONS ASYNCHRONES EN DIRECT (REAL-TIME)
+# ============================================================
+
+def notifications_api_view(request):
+    """
+    Retourne la liste des notifications non lues ou de toutes les notifications en JSON.
+    Permet un rafraîchissement asynchrone régulier pour un effet "temps réel" conforme.
+    """
+    user_id = request.session.get('verified_user_id')
+    if not user_id:
+        return JsonResponse({'error': 'Non connecté'}, status=401)
+        
+    profil = Utilisateur.objects.filter(id=user_id).first()
+    if not profil:
+        return JsonResponse({'error': 'Profil introuvable'}, status=404)
+        
+    db_notifications = Notification.objects.filter(utilisateur=profil).order_by('-created_at')
+    liste_notifications = []
+    
+    for notif in db_notifications:
+        # Convert timesince in python style or let JS handle it, standard date formatting is easier
+        liste_notifications.append({
+            'id': notif.id,
+            'type': notif.type_notification,
+            'contenu': notif.contenu,
+            'lue': notif.lu,
+            'date': notif.created_at.strftime('%d %b à %H:%M')
+        })
+        
+    return JsonResponse({
+        'notifications': liste_notifications,
+        'nb_non_lus': Notification.objects.filter(utilisateur=profil, lu=False).count()
     })
