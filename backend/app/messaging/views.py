@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect
 from django.contrib import messages as django_messages
+from django.http import JsonResponse
 from app.core.models import Utilisateur
 from app.messaging.models import Conversation, Message
 from app.mentorat.models import RelationMentorat, Reponse
@@ -22,7 +23,6 @@ def message_view(request):
     if contact_id:
         contact_user = Utilisateur.objects.filter(id=contact_id).first()
         if contact_user and contact_user != profil:
-            # Recherche d'une relation existante dans les deux sens
             relation = RelationMentorat.objects.filter(
                 mentor=profil, mentore=contact_user
             ).first() or RelationMentorat.objects.filter(
@@ -30,28 +30,24 @@ def message_view(request):
             ).first()
             
             if not relation:
-                # Création d'une réponse de liaison (requise par la contrainte NOT NULL de votre base de données SQL)
                 reponse_liaison = Reponse.objects.create(
-                    publication=None,  # Liaison directe sans publication spécifique
+                    publication=None,
                     auteur=profil,
                     message="Liaison automatique initiée depuis le profil",
                     statut='ACCEPTEE'
                 )
                 
-                # Création d'une relation de mentorat active
                 relation = RelationMentorat.objects.create(
-                    mentor=contact_user,  # Le contact externe est considéré comme le mentor
-                    mentore=profil,       # L'initiateur est considéré comme le mentoré
+                    mentor=contact_user,
+                    mentore=profil,
                     reponse=reponse_liaison,
                     statut='ACTIVE'
                 )
                 
-            # Recherche ou création d'une conversation liée à cette relation
             conversation = Conversation.objects.filter(relation=relation).first()
             if not conversation:
                 conversation = Conversation.objects.create(relation=relation)
                 
-            # Redirection directe vers la fenêtre de chat active !
             return redirect(f"/messages/?conv={conversation.id}")
 
     # 3. GESTION DU POST : Envoi d'un message
@@ -60,17 +56,14 @@ def message_view(request):
         contenu = request.POST.get('contenu')
         
         if conv_id and contenu:
-            # On vérifie que la conversation existe et que l'utilisateur y participe
             conversation = Conversation.objects.filter(id=conv_id).first()
             if conversation and (conversation.relation.mentor == profil or conversation.relation.mentore == profil):
-                # Création et sauvegarde du message
                 Message.objects.create(
                     conversation=conversation,
                     expediteur=profil,
                     contenu=contenu,
                     lu=False
                 )
-                # Redirection vers la même page avec le paramètre de conversation active
                 return redirect(f"/messages/?conv={conv_id}")
 
     # 4. RÉCUPÉRATION DE TOUTES LES CONVERSATIONS DE L'UTILISATEUR (MENTOR OU MENTORÉ)
@@ -80,7 +73,6 @@ def message_view(request):
         relation__mentore=profil
     )
     
-    # On structure les conversations pour le template HTML
     liste_conversations = []
     for conv in db_conversations:
         if conv.relation.mentor == profil:
@@ -89,7 +81,6 @@ def message_view(request):
             interlocuteur = conv.relation.mentor
             
         dernier_msg = conv.messages.order_by('-created_at').first()
-        
         dernier_msg_data = None
         if dernier_msg:
             dernier_msg_data = {
@@ -146,3 +137,97 @@ def message_view(request):
     }
     
     return render(request, 'message.html', context)
+
+
+# ============================================================
+# API ENDPOINTS POUR LE CHAT ASYNCHRONE EN DIRECT (REAL-TIME LOOK)
+# ============================================================
+
+def message_api_view(request, conv_id):
+    """
+    Retourne la liste complète des messages d'une conversation sous format JSON.
+    Marque automatiquement les messages reçus comme 'lus'.
+    """
+    user_id = request.session.get('verified_user_id')
+    if not user_id:
+        return JsonResponse({'error': 'Non connecté'}, status=401)
+        
+    profil = Utilisateur.objects.filter(id=user_id).first()
+    conv = Conversation.objects.filter(id=conv_id).first()
+    
+    if not conv or (conv.relation.mentor != profil and conv.relation.mentore != profil):
+        return JsonResponse({'error': 'Accès interdit'}, status=403)
+        
+    # Déterminer l'interlocuteur pour marquer les messages reçus comme 'lus'
+    if conv.relation.mentor == profil:
+        interlocuteur = conv.relation.mentore
+    else:
+        interlocuteur = conv.relation.mentor
+        
+    # Marquage des messages entrants comme lus
+    conv.messages.filter(expediteur=interlocuteur, lu=False).update(lu=True)
+    
+    # Extraction des messages
+    db_messages = conv.messages.order_by('created_at')
+    messages_list = []
+    for m in db_messages:
+        messages_list.append({
+            'id': m.id,
+            'expediteur_id': m.expediteur.id,
+            'expediteur_nom': f"{m.expediteur.prenom} {m.expediteur.nom}",
+            'contenu': m.contenu,
+            'date': m.created_at.strftime('%H:%M'),
+            'lu': m.lu
+        })
+        
+    return JsonResponse({
+        'messages': messages_list,
+        'profil_id': profil.id
+    })
+
+
+def envoyer_message_api(request, conv_id):
+    """
+    Enregistre un nouveau message envoyé de manière asynchrone (AJAX via fetch)
+    et renvoie le message créé au format JSON.
+    """
+    user_id = request.session.get('verified_user_id')
+    if not user_id:
+        return JsonResponse({'error': 'Non connecté'}, status=401)
+        
+    profil = Utilisateur.objects.filter(id=user_id).first()
+    conv = Conversation.objects.filter(id=conv_id).first()
+    
+    if not conv or (conv.relation.mentor != profil and conv.relation.mentore != profil):
+        return JsonResponse({'error': 'Accès interdit'}, status=403)
+        
+    if request.method == 'POST':
+        import json
+        try:
+            # Saisie JSON (fetch api)
+            data = json.loads(request.body)
+            contenu = data.get('contenu')
+        except:
+            # Saisie Form classique
+            contenu = request.POST.get('contenu')
+            
+        if contenu:
+            msg = Message.objects.create(
+                conversation=conv,
+                expediteur=profil,
+                contenu=contenu,
+                lu=False
+            )
+            return JsonResponse({
+                'success': True,
+                'message': {
+                    'id': msg.id,
+                    'expediteur_id': msg.expediteur.id,
+                    'expediteur_nom': f"{msg.expediteur.prenom} {msg.expediteur.nom}",
+                    'contenu': msg.contenu,
+                    'date': msg.created_at.strftime('%H:%M'),
+                    'lu': msg.lu
+                }
+            })
+            
+    return JsonResponse({'error': 'Requête invalide'}, status=400)
