@@ -152,6 +152,7 @@
                   {% for jour in creneau.jours %}
                   <td style="cursor:pointer;">
                     <input type="checkbox"
+                           title="Créneau disponible"
                            class="form-check-input"
                            name="dispo_{{ creneau.slug }}_{{ jour.slug }}"
                            value="1"
@@ -166,7 +167,7 @@
                   <td class="fw-medium text-muted bg-light">{{ label }}</td>
                   {% for j in "lun,mar,mer,jeu,ven,sam"|split:"," %}
                   <td style="cursor:pointer;">
-                    <input type="checkbox" class="form-check-input"
+                    <input type="checkbox" title="Créneau disponible" class="form-check-input"
                            name="dispo_{{ label }}_{{ j }}" value="1">
                   </td>
                   {% endfor %}
