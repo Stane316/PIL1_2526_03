@@ -1,73 +1,198 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Demandes - MentorLink</title></head>
-<body>
-    {% include 'header.html' %}
-    {% include 'navbar.html' %}
-    
-    <main>
-        <h2>Formuler une nouvelle demande d'aide</h2>
-        <form method="POST">
-            {% csrf_token %}
-            <h3>Matières :</h3>
-            {% for b in points_faibles %}
-                <label><input type="checkbox" name="matieres_faibles" value="{{ b.domaine.id }}"> {{ b.domaine.nom }}</label><br>
-            {% endfor %}
+{% extends "base_dashboard.html" %}
+{% load static %}
 
-            <h3>Disponibilités :</h3>
-            <table class="table-horaire" border="1">
-                <tr><th>Jour</th><th>Matin</th><th>Midi</th><th>Après-midi</th><th>Soir</th></tr>
-                {% for jour, label in jours_choices %}
-                <tr>
-                    <td>{{ label }}</td>
-                    <td><input type="checkbox" name="dispo_{{ jour }}_MATIN" value="1"></td>
-                    <td><input type="checkbox" name="dispo_{{ jour }}_MIDI" value="1"></td>
-                    <td><input type="checkbox" name="dispo_{{ jour }}_APRES-MIDI" value="1"></td>
-                    <td><input type="checkbox" name="dispo_{{ jour }}_SOIR" value="1"></td>
-                </tr>
-                {% endfor %}
-            </table>
-            <button type="submit">Publier la demande</button>
-        </form>
+{% block page_title %}Demandes d'Aide{% endblock %}
 
-        <h3>Mes demandes récentes</h3>
-       {% for d in mes_demandes %}
-        <div class="demande-block">
-            {% if d.utilisateur.photo_profil %}
-                <img src="{{ d.utilisateur.photo_profil }}" class="profile-img" alt="Photo">
-            {% else %}
-                <img src="https://api.dicebear.com/7.x/bottts/svg?seed={{ d.utilisateur.username }}" class="profile-img" alt="Avatar">
-            {% endif %}
-            
-            <div>
-                <p><strong>{{ d.utilisateur.first_name }} {{ d.utilisateur.last_name }}</strong></p>
-                <p>Statut : {{ d.statut }} | Date : {{ d.date_publication|date:"d/m/Y" }}</p>
-                
-                <p><strong>Matières :</strong> 
-                    {% for dd in d.demandedomaine_set.all %}{{ dd.domaine.nom }}{% if not forloop.last %}, {% endif %}{% endfor %}
-                </p>
+{% block content %}
 
-                <p><strong>Disponibilités :</strong> 
-                    {% for dispo in d.demandedisponibilite_set.all %}
-                        <span>
-                            {% if dispo.jour_semaine == 1 %}Lundi
-                            {% elif dispo.jour_semaine == 2 %}Mardi
-                            {% elif dispo.jour_semaine == 3 %}Mercredi
-                            {% elif dispo.jour_semaine == 4 %}Jeudi
-                            {% elif dispo.jour_semaine == 5 %}Vendredi
-                            {% elif dispo.jour_semaine == 6 %}Samedi
-                            {% elif dispo.jour_semaine == 7 %}Dimanche
-                            {% else %}Jour inconnu
-                            {% endif %}
-                            ({{ dispo.heure_debut|time:"H:i" }} - {{ dispo.heure_fin|time:"H:i" }})
-                        </span>{% if not forloop.last %}, {% endif %}
-                    {% empty %}
-                        Aucune disponibilité spécifiée.
-                    {% endfor %}
-                </p>
-            </div>
+{% include 'header.html' %}
+{% include 'navbar.html' %}
+
+<!-- ── En-tête page ──────────────────────────────────────────────── -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <p class="text-muted mb-0">
+      Consultez les requêtes des étudiants et proposez vos compétences pour les aider.
+    </p>
+  </div>
+  <!-- Bouton publication : déclenche une modale Bootstrap -->
+  <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#modalPublierDemande">
+    <i class="bi bi-plus-lg me-1"></i> Formuler une demande
+  </button>
+</div>
+
+<!-- ── Filtres (GET — pas de csrf_token) ────────────────────────── -->
+<div class="card border-light shadow-sm mb-4">
+  <div class="card-body py-3">
+    <form method="GET" action="{% url 'demandes' %}" class="row g-3 align-items-end">
+      <div class="col-md-5">
+        <label class="form-label small text-muted">Recherche par mots-clés</label>
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-white text-muted"><i class="bi bi-search"></i></span>
+          <input type="text" class="form-control" name="q"
+                 placeholder="Ex: UML, Bases de données..."
+                 value="{{ request.GET.q|default:'' }}">
         </div>
-        {% endfor %}
-    </main>
-</body>
-</html>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label small text-muted">Matière</label>
+        <select class="form-select form-select-sm" name="matiere">
+          <option value="" {% if not request.GET.matiere %}selected{% endif %}>
+            Toutes les matières
+          </option>
+          <option value="UML"              {% if request.GET.matiere == 'UML'              %}selected{% endif %}>UML</option>
+          <option value="Réseaux"          {% if request.GET.matiere == 'Réseaux'          %}selected{% endif %}>Réseaux</option>
+          <option value="PostgreSQL"       {% if request.GET.matiere == 'PostgreSQL'       %}selected{% endif %}>PostgreSQL</option>
+          <option value="Algorithmique"    {% if request.GET.matiere == 'Algorithmique'    %}selected{% endif %}>Algorithmique</option>
+          <option value="Python"           {% if request.GET.matiere == 'Python'           %}selected{% endif %}>Python</option>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <button type="submit" class="btn btn-outline-primary btn-sm w-100">
+          <i class="bi bi-funnel me-1"></i>Filtrer
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Liste des demandes ────────────────────────────────────────── -->
+<div class="row g-4">
+  {% for demande in demandes_list %}
+  <div class="col-md-6 col-xl-4">
+    <div class="card h-100 border-light shadow-sm">
+      <div class="card-body d-flex flex-column">
+
+        <!-- Badge matière + date -->
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="badge bg-danger bg-opacity-10 text-danger">{{ demande.matiere }}</span>
+          <span class="small text-muted" style="font-size:.75rem;">
+            {{ demande.date_creation|timesince }} ago
+          </span>
+        </div>
+
+        <!-- Titre -->
+        <h6 class="fw-bold mb-2">{{ demande.titre }}</h6>
+
+        <!-- Description tronquée -->
+        <p class="small text-muted mb-3"
+           style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+          {{ demande.description }}
+        </p>
+
+        <!-- Auteur -->
+        <div class="d-flex align-items-center gap-2 mb-4">
+          <img src="https://ui-avatars.com/api/?name={{ demande.auteur.prenom }}+{{ demande.auteur.nom }}&background=random"
+               class="rounded-circle" width="24" height="24" alt="Avatar">
+          <span class="small fw-medium text-dark">
+            {{ demande.auteur.prenom }} {{ demande.auteur.nom }}
+          </span>
+        </div>
+
+        <!-- Pied de carte -->
+        <div class="d-flex justify-content-between align-items-center border-top border-light pt-3 mt-auto">
+          <span class="small text-muted">
+            <i class="bi bi-clock text-primary"></i>
+            {% if demande.disponibilite %}
+              Dispo : {{ demande.disponibilite }}
+            {% else %}
+              Disponibilité non précisée
+            {% endif %}
+          </span>
+          <a href="{% url 'message' %}" class="btn btn-sm btn-outline-primary px-3">
+            Proposer mon aide
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12">
+    <div class="alert alert-light border text-center py-5">
+      <i class="bi bi-search-heart fs-2 text-muted d-block mb-3"></i>
+      <h6 class="fw-bold">Aucune demande d'aide pour l'instant.</h6>
+      <p class="text-muted small mb-3">
+        Vous avez besoin d'aide sur une matière ? Formulez votre demande !
+      </p>
+      <button class="btn btn-primary btn-sm"
+              data-bs-toggle="modal" data-bs-target="#modalPublierDemande">
+        <i class="bi bi-plus-lg me-1"></i>Formuler une demande
+      </button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     MODALE : Formuler une demande d'aide
+     ════════════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalPublierDemande" tabindex="-1"
+     aria-labelledby="modalPublierDemandeLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow">
+
+      <div class="modal-header border-bottom border-light">
+        <h5 class="modal-title fw-bold" id="modalPublierDemandeLabel">
+          <i class="bi bi-search-heart-fill text-danger me-2"></i>
+          Formuler une demande d'aide
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form method="POST" action="{% url 'demandes' %}">
+        {% csrf_token %}
+        <div class="modal-body p-4">
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">Titre de la demande <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="titre"
+                   placeholder="Ex: Comprendre les diagrammes de séquence UML" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">Matière <span class="text-danger">*</span></label>
+            <select class="form-select" name="matiere" required>
+              <option value="">— Choisir une matière —</option>
+              <option value="Python">Python</option>
+              <option value="Algorithmique">Algorithmique</option>
+              <option value="Bases de données">Bases de données</option>
+              <option value="Django">Django</option>
+              <option value="Réseaux">Réseaux</option>
+              <option value="UML">UML</option>
+              <option value="Systèmes d'exploitation">Systèmes d'exploitation</option>
+              <option value="PostgreSQL">PostgreSQL</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">Description <span class="text-danger">*</span></label>
+            <textarea class="form-control" name="description" rows="4"
+                      placeholder="Expliquez précisément où vous bloquez, ce que vous avez déjà essayé..." required></textarea>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">Disponibilité préférée</label>
+            <input type="text" class="form-control" name="disponibilite"
+                   placeholder="Ex: Samedi matin, Mercredi soir...">
+            <div class="form-text text-muted">
+              Vos disponibilités générales issues de votre profil sont déjà prises en compte par le matching.
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer border-top border-light">
+          <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-send me-2"></i>Publier la demande
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

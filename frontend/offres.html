@@ -1,82 +1,214 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Offres - MentorLink</title>
-    <style>
-        .profile-img { width: 50px; height: 50px; border-radius: 50%; object-fit: cover; }
-        .demande-block { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 10px; display: flex; gap: 15px; align-items: start; }
-        .table-horaire { width: 100%; border-collapse: collapse; margin: 15px 0; }
-    </style>
-</head>
-<body>
-    {% include 'header.html' %}
-    {% include 'navbar.html' %}
-    <main>
-        <h2>Proposer une nouvelle offre d'aide (Partager vos compétences)</h2>
-        <form method="POST">
-            {% csrf_token %}
-            <h3>Matières que vous maîtrisez :</h3>
-            {% for pf in points_forts %}
-                <label><input type="checkbox" name="matieres_fortes" value="{{ pf.domaine.id }}"> {{ pf.domaine.nom }}</label><br>
-            {% endfor %}
+{% extends "base_dashboard.html" %}
+{% load static %}
 
-            <h3>Indiquez vos disponibilités pour aider :</h3>
-            <table class="table-horaire" border="1">
-                <tr><th>Jour</th><th>Matin</th><th>Midi</th><th>Après-midi</th><th>Soir</th></tr>
-                {% for jour, label in jours_choices %}
-                <tr>
-                    <td>{{ label }}</td>
-                    <td><input type="checkbox" name="dispo_{{ jour }}_MATIN" value="1"></td>
-                    <td><input type="checkbox" name="dispo_{{ jour }}_MIDI" value="1"></td>
-                    <td><input type="checkbox" name="dispo_{{ jour }}_APRES-MIDI" value="1"></td>
-                    <td><input type="checkbox" name="dispo_{{ jour }}_SOIR" value="1"></td>
-                </tr>
-                {% endfor %}
-            </table>
-            <button type="submit">Publier l'offre d'aide</button>
-        </form>
+{% block page_title %}Offres de Mentorat{% endblock %}
 
-        <h3>Mes offres d'aide récentes</h3>
-        {% for o in mes_offres %}
-        <div class="demande-block">
-            {% if o.utilisateur.photo_profil %}
-                <img src="{{ o.utilisateur.photo_profil }}" class="profile-img" alt="Photo">
-            {% else %}
-                <img src="https://api.dicebear.com/7.x/bottts/svg?seed={{ o.utilisateur.id }}" class="profile-img" alt="Avatar">
-            {% endif %}
-            
-            <div>
-                <p><strong>{{ o.utilisateur.prenom }} {{ o.utilisateur.nom }}</strong></p>
-                <p>Statut : {{ o.statut }} | Date : {{ o.date_publication|date:"d/m/Y" }}</p>
-                
-                <p><strong>Matières proposées :</strong> 
-                    {% for dd in o.demandedomaine_set.all %}{{ dd.domaine.nom }}{% if not forloop.last %}, {% endif %}{% endfor %}
-                </p>
+{% block content %}
 
-                <p><strong>Disponibilités associées :</strong> 
-                    {% for dispo in o.demandedisponibilite_set.all %}
-                        <span>
-                            {% if dispo.jour_semaine == 1 %}Lundi
-                            {% elif dispo.jour_semaine == 2 %}Mardi
-                            {% elif dispo.jour_semaine == 3 %}Mercredi
-                            {% elif dispo.jour_semaine == 4 %}Jeudi
-                            {% elif dispo.jour_semaine == 5 %}Vendredi
-                            {% elif dispo.jour_semaine == 6 %}Samedi
-                            {% elif dispo.jour_semaine == 7 %}Dimanche
-                            {% else %}Jour inconnu
-                            {% endif %}
-                            ({{ dispo.heure_debut|time:"H:i" }} - {{ dispo.heure_fin|time:"H:i" }})
-                        </span>{% if not forloop.last %}, {% endif %}
-                    {% empty %}
-                        Aucune disponibilité spécifiée.
-                    {% endfor %}
-                </p>
-            </div>
+<!-- ── En-tête page ──────────────────────────────────────────────── -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <p class="text-muted mb-0">
+      Parcourez les offres publiées par les étudiants pour trouver de l'aide sur une matière spécifique.
+    </p>
+  </div>
+  <!-- Bouton publication : déclenche une modale Bootstrap -->
+  <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#modalPublierOffre">
+    <i class="bi bi-plus-lg me-1"></i> Publier une offre
+  </button>
+</div>
+
+<!-- ── Filtres (GET — pas de csrf_token) ────────────────────────── -->
+<div class="card border-light shadow-sm mb-4">
+  <div class="card-body py-3">
+    <form method="GET" action="{% url 'offres' %}" class="row g-3 align-items-end">
+      <div class="col-md-5">
+        <label class="form-label small text-muted">Recherche par mots-clés</label>
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-white text-muted"><i class="bi bi-search"></i></span>
+          <input type="text" class="form-control" name="q"
+                 placeholder="Ex: Django, Algorithmique..."
+                 value="{{ request.GET.q|default:'' }}">
         </div>
-        {% empty %}
-            <p>Aucune offre d'aide publiée pour le moment.</p>
-        {% endfor %}
-    </main>
-</body>
-</html>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label small text-muted">Matière</label>
+        <select class="form-select form-select-sm" name="matiere">
+          <option value="" {% if not request.GET.matiere %}selected{% endif %}>
+            Toutes les matières
+          </option>
+          <option value="Python"         {% if request.GET.matiere == 'Python'         %}selected{% endif %}>Python</option>
+          <option value="Algorithmique"  {% if request.GET.matiere == 'Algorithmique'  %}selected{% endif %}>Algorithmique</option>
+          <option value="Bases de données" {% if request.GET.matiere == 'Bases de données' %}selected{% endif %}>Bases de données</option>
+          <option value="Django"         {% if request.GET.matiere == 'Django'         %}selected{% endif %}>Django</option>
+          <option value="Réseaux"        {% if request.GET.matiere == 'Réseaux'        %}selected{% endif %}>Réseaux</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <label class="form-label small text-muted">Modalité</label>
+        <select class="form-select form-select-sm" name="modalite">
+          <option value="" {% if not request.GET.modalite %}selected{% endif %}>Toutes</option>
+          <option value="en_ligne"   {% if request.GET.modalite == 'en_ligne'   %}selected{% endif %}>En ligne</option>
+          <option value="presentiel" {% if request.GET.modalite == 'presentiel' %}selected{% endif %}>Présentiel</option>
+        </select>
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-outline-primary btn-sm w-100">
+          <i class="bi bi-funnel me-1"></i>Filtrer
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ── Liste des offres ──────────────────────────────────────────── -->
+<div class="row g-4">
+  {% for offre in offres_list %}
+  <div class="col-md-6 col-xl-4">
+    <div class="card h-100 border-light shadow-sm">
+      <div class="card-body d-flex flex-column">
+
+        <!-- Badge matière + date -->
+        <div class="d-flex justify-content-between align-items-start mb-2">
+          <span class="badge bg-success bg-opacity-10 text-success">{{ offre.matiere }}</span>
+          <span class="small text-muted" style="font-size:.75rem;">
+            {{ offre.date_creation|timesince }} ago
+          </span>
+        </div>
+
+        <!-- Titre -->
+        <h6 class="fw-bold mb-2">{{ offre.titre }}</h6>
+
+        <!-- Description tronquée -->
+        <p class="small text-muted mb-3"
+           style="display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">
+          {{ offre.description }}
+        </p>
+
+        <!-- Auteur -->
+        <div class="d-flex align-items-center gap-2 mb-4">
+          <img src="https://ui-avatars.com/api/?name={{ offre.auteur.prenom }}+{{ offre.auteur.nom }}&background=random"
+               class="rounded-circle" width="24" height="24" alt="Avatar">
+          <span class="small fw-medium text-dark">
+            {{ offre.auteur.prenom }} {{ offre.auteur.nom }}
+          </span>
+        </div>
+
+        <!-- Pied de carte -->
+        <div class="d-flex justify-content-between align-items-center border-top border-light pt-3 mt-auto">
+          <span class="small text-muted">
+            {% if offre.modalite == 'en_ligne' %}
+              <i class="bi bi-laptop text-primary"></i> En ligne
+            {% else %}
+              <i class="bi bi-geo-alt-fill text-primary"></i> Présentiel (IFRI)
+            {% endif %}
+          </span>
+          <a href="{% url 'message' %}" class="btn btn-sm btn-outline-primary px-3">
+            Répondre
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-12">
+    <div class="alert alert-light border text-center py-5">
+      <i class="bi bi-hand-thumbs-up fs-2 text-muted d-block mb-3"></i>
+      <h6 class="fw-bold">Aucune offre disponible pour l'instant.</h6>
+      <p class="text-muted small mb-3">
+        Soyez le premier à proposer votre aide !
+      </p>
+      <button class="btn btn-primary btn-sm"
+              data-bs-toggle="modal" data-bs-target="#modalPublierOffre">
+        <i class="bi bi-plus-lg me-1"></i>Publier une offre
+      </button>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+
+<!-- ════════════════════════════════════════════════════════════════
+     MODALE : Publier une offre de mentorat
+     ════════════════════════════════════════════════════════════════ -->
+<div class="modal fade" id="modalPublierOffre" tabindex="-1"
+     aria-labelledby="modalPublierOffreLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-content border-0 shadow">
+
+      <div class="modal-header border-bottom border-light">
+        <h5 class="modal-title fw-bold" id="modalPublierOffreLabel">
+          <i class="bi bi-hand-thumbs-up-fill text-primary me-2"></i>
+          Publier une offre de mentorat
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form method="POST" action="{% url 'offres' %}">
+        {% csrf_token %}
+        <div class="modal-body p-4">
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">Titre de l'offre <span class="text-danger">*</span></label>
+            <input type="text" class="form-control" name="titre"
+                   placeholder="Ex: Soutien en Algorithmique et structures de données" required>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">Matière <span class="text-danger">*</span></label>
+            <select class="form-select" name="matiere" required>
+              <option value="">— Choisir une matière —</option>
+              <option value="Python">Python</option>
+              <option value="Algorithmique">Algorithmique</option>
+              <option value="Bases de données">Bases de données</option>
+              <option value="Django">Django</option>
+              <option value="Réseaux">Réseaux</option>
+              <option value="UML">UML</option>
+              <option value="Systèmes d'exploitation">Systèmes d'exploitation</option>
+            </select>
+          </div>
+
+          <div class="mb-3">
+            <label class="form-label fw-medium">Description <span class="text-danger">*</span></label>
+            <textarea class="form-control" name="description" rows="4"
+                      placeholder="Décrivez ce que vous proposez, votre approche, le niveau visé..." required></textarea>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-medium">Modalité</label>
+              <select class="form-select" name="modalite">
+                <option value="en_ligne">En ligne</option>
+                <option value="presentiel">Présentiel (IFRI)</option>
+                <option value="les_deux">Les deux</option>
+              </select>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-medium">Niveau cible</label>
+              <select class="form-select" name="niveau_cible">
+                <option value="">Tous niveaux</option>
+                <option value="L1">Licence 1</option>
+                <option value="L2">Licence 2</option>
+                <option value="L3">Licence 3</option>
+                <option value="M1">Master 1</option>
+                <option value="M2">Master 2</option>
+              </select>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="modal-footer border-top border-light">
+          <button type="button" class="btn btn-ghost" data-bs-dismiss="modal">Annuler</button>
+          <button type="submit" class="btn btn-primary">
+            <i class="bi bi-send me-2"></i>Publier l'offre
+          </button>
+        </div>
+      </form>
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}

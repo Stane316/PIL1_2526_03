@@ -1,12 +1,232 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Dashboard - MentorLink</title></head>
-<body>
-    {% include 'header.html' %}
-    {% include 'navbar.html' %}
-    <main>
-        <h2>Contenu : Dashboard (Tableau de bord)</h2>
-        <p>Espace réservé aux statistiques et au résumé de l'utilisateur.</p>
-    </main>
-</body>
-</html>
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block page_title %}Tableau de bord{% endblock %}
+
+{% block content %}
+
+{# ── LES DEUX LIGNES SUIVANTES ONT ÉTÉ SUPPRIMÉES (includes parasites) :
+   {% include 'header.html' %}
+   {% include 'navbar.html' %}
+   header.html et navbar.html ne doivent PAS être inclus ici.
+   La sidebar + navbar_profil sont déjà gérés par base_dashboard.html. #}
+
+<!-- ── Bannière profil incomplet (affichée seulement si profil incomplet) ── -->
+{% if not profil.disponibilites_completes %}
+<div class="alert alert-warning border-warning d-flex align-items-center shadow-sm rounded-3 mb-4"
+     role="alert" style="background-color:rgba(245,158,11,.1);">
+  <i class="bi bi-exclamation-triangle-fill fs-4 me-3 text-warning"></i>
+  <div>
+    <h6 class="mb-1 fw-bold text-dark">
+      Complétez vos disponibilités pour activer le système de matching.
+    </h6>
+    <p class="mb-0 small text-muted">
+      Le moteur a besoin de vos créneaux horaires pour vous suggérer des profils compatibles.
+    </p>
+  </div>
+  <a href="{% url 'modifier_profil' %}" class="btn btn-warning btn-sm ms-auto text-dark fw-medium">
+    Compléter maintenant
+  </a>
+</div>
+{% endif %}
+
+<!-- ── Bloc de bienvenue ──────────────────────────────────────────────────── -->
+<div class="mb-4">
+  <h4 class="fw-bold mb-1">
+    Bonjour, {{ profil.prenom|default:"Étudiant" }} 👋
+  </h4>
+  <p class="text-muted small mb-0">
+    {{ profil.filiere|default:"" }}
+    {% if profil.filiere and profil.niveau %} • {% endif %}
+    {{ profil.niveau|default:"" }}
+  </p>
+</div>
+
+<!-- ── Statistiques ───────────────────────────────────────────────────────── -->
+<div class="row g-4 mb-4">
+
+  <div class="col-sm-6 col-lg-3">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex align-items-center mb-2">
+          <div class="bg-primary bg-opacity-10 p-2 rounded text-primary me-3">
+            <i class="bi bi-link-45deg fs-5"></i>
+          </div>
+          <span class="text-muted fw-medium small text-uppercase">Relations Actives</span>
+        </div>
+        <h3 class="mb-0 fw-bold">{{ nb_relations|default:"0" }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-lg-3">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex align-items-center mb-2">
+          <div class="bg-success bg-opacity-10 p-2 rounded text-success me-3">
+            <i class="bi bi-bullseye fs-5"></i>
+          </div>
+          <span class="text-muted fw-medium small text-uppercase">Matchs trouvés</span>
+        </div>
+        <h3 class="mb-0 fw-bold">{{ nb_matchs|default:"0" }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-lg-3">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex align-items-center mb-2">
+          <div class="bg-warning bg-opacity-10 p-2 rounded text-warning me-3">
+            <i class="bi bi-chat-dots fs-5"></i>
+          </div>
+          <span class="text-muted fw-medium small text-uppercase">Messages Non Lus</span>
+        </div>
+        <h3 class="mb-0 fw-bold">{{ nb_messages_non_lus|default:"0" }}</h3>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-sm-6 col-lg-3">
+    <div class="card h-100 border-0 shadow-sm">
+      <div class="card-body">
+        <div class="d-flex align-items-center mb-2">
+          <div class="bg-info bg-opacity-10 p-2 rounded text-info me-3">
+            <i class="bi bi-bell fs-5"></i>
+          </div>
+          <span class="text-muted fw-medium small text-uppercase">Notifications</span>
+        </div>
+        <h3 class="mb-0 fw-bold">{{ nb_notifications|default:"0" }}</h3>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── Grille principale ──────────────────────────────────────────────────── -->
+<div class="row g-4">
+
+  <!-- ────── Colonne gauche (8/12) ───────────────────────────────── -->
+  <div class="col-lg-8">
+
+    <!-- Profils Compatibles -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold mb-0 d-flex align-items-center gap-2">
+        <i class="bi bi-stars text-primary"></i> Profils Compatibles
+      </h5>
+      <a href="{% url 'matching' %}" class="text-decoration-none text-primary small fw-medium">
+        Voir le matching complet
+      </a>
+    </div>
+    <p class="small text-muted mb-3">
+      Étudiants de l'IFRI ayant des compétences qui correspondent à vos lacunes.
+    </p>
+
+    <div class="row g-3 mb-5">
+      {% for match in top_matchs %}
+      <div class="col-md-6">
+        <div class="card h-100 border-light shadow-sm">
+          <div class="card-body">
+            <div class="d-flex align-items-center gap-3 mb-3">
+              <img src="https://ui-avatars.com/api/?name={{ match.prenom }}+{{ match.nom }}&background=random"
+                   class="rounded-circle" width="48" height="48" alt="Avatar">
+              <div class="flex-grow-1">
+                <h6 class="mb-0 fw-bold">{{ match.prenom }} {{ match.nom }}</h6>
+                <p class="mb-0 small text-muted">{{ match.filiere }} • {{ match.niveau }}</p>
+              </div>
+              <div class="matching-score {% if match.score >= 80 %}score-excellent{% else %}score-good{% endif %} fs-5">
+                {{ match.score }}%
+              </div>
+            </div>
+            <div class="d-flex gap-1 flex-wrap mb-3">
+              {% for matiere in match.matieres_communes %}
+                <span class="badge badge-skill">{{ matiere }}</span>
+              {% endfor %}
+            </div>
+            <a href="{% url 'message' %}" class="btn btn-sm btn-outline-primary w-100">
+              <i class="bi bi-chat-left-text me-1"></i>Contacter
+            </a>
+          </div>
+        </div>
+      </div>
+      {% empty %}
+      <div class="col-12">
+        <div class="alert alert-light border text-center">
+          <i class="bi bi-search me-2"></i>
+          Aucun profil compatible pour l'instant.
+          <a href="{% url 'modifier_profil' %}" class="fw-semibold ms-1">
+            Complétez votre profil
+          </a> pour activer le matching.
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+  </div>
+
+  <!-- ────── Colonne droite (4/12) ───────────────────────────────── -->
+  <div class="col-lg-4">
+    <h5 class="fw-bold mb-3 d-flex align-items-center gap-2">
+      <i class="bi bi-activity text-secondary"></i> Activité Récente
+    </h5>
+
+    <!-- Demandes récentes -->
+    <div class="card border-light shadow-sm mb-4">
+      <div class="card-header bg-white border-light pt-3 pb-2">
+        <h6 class="fw-bold text-dark mb-0">Demandes d'aide</h6>
+      </div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+          {% for demande in demandes_recentes %}
+          <li class="list-group-item p-3 border-light">
+            <h6 class="fw-bold mb-1 fs-6">{{ demande.titre }}</h6>
+            <div class="d-flex align-items-center gap-2 mt-2">
+              <span class="small text-muted">{{ demande.utilisateur.prenom }} {{ demande.utilisateur.nom }}</span>
+            </div>
+          </li>
+          {% empty %}
+          <li class="list-group-item p-3 text-center text-muted small">
+            Aucune demande récente.
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="card-footer bg-light border-light text-center p-2">
+        <a href="{% url 'demandes' %}" class="text-primary small text-decoration-none fw-medium">
+          Voir toutes les demandes
+        </a>
+      </div>
+    </div>
+
+    <!-- Offres récentes -->
+    <div class="card border-light shadow-sm">
+      <div class="card-header bg-white border-light pt-3 pb-2">
+        <h6 class="fw-bold text-dark mb-0">Offres de mentorat</h6>
+      </div>
+      <div class="card-body p-0">
+        <ul class="list-group list-group-flush">
+          {% for offre in offres_recentes %}
+          <li class="list-group-item p-3 border-light">
+            <h6 class="fw-bold mb-1 fs-6">{{ offre.titre }}</h6>
+            <div class="d-flex align-items-center gap-2 mt-2">
+              <span class="small text-muted">{{ offre.utilisateur.prenom }} {{ offre.utilisateur.nom }}</span>
+            </div>
+          </li>
+          {% empty %}
+          <li class="list-group-item p-3 text-center text-muted small">
+            Aucune offre récente.
+          </li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="card-footer bg-light border-light text-center p-2">
+        <a href="{% url 'offres' %}" class="text-primary small text-decoration-none fw-medium">
+          Voir toutes les offres
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+{% endblock %}

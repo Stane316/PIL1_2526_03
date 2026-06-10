@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block layout %}
+<div class="wrapper">
+
+  <!-- ── Sidebar ────────────────────────────────────────────── -->
+  {% include "components/sidebar.html" %}
+
+  <!-- ── Zone principale ───────────────────────────────────── -->
+  <div class="main-content d-flex flex-column min-vh-100">
+
+    <!-- Topbar -->
+    {% include "components/navbar_profil.html" %}
+
+    <!-- Contenu -->
+    <main class="flex-grow-1 p-4">
+      {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    {% include "components/footer.html" %}
+
+  </div>
+</div>
+{% endblock %}

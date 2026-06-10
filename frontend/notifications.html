@@ -1,12 +1,107 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Notifications - MentorLink</title></head>
-<body>
-    {% include 'header.html' %}
-    {% include 'navbar.html' %}
-    <main>
-        <h2>Contenu : Notifications</h2>
-        <p>Historique complet des alertes et activités de votre compte.</p>
-    </main>
-</body>
-</html>
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block page_title %}Notifications{% endblock %}
+
+{% block content %}
+
+{% include 'header.html' %}
+{% include 'navbar.html' %}
+
+<!-- ── En-tête avec action "tout marquer lu" ─────────────────────── -->
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <div>
+    <p class="text-muted mb-0">
+      Vos demandes, matchs, messages et alertes système.
+    </p>
+  </div>
+  {% if notifications %}
+  <form method="POST" action="{% url 'notifications' %}">
+    {% csrf_token %}
+    <input type="hidden" name="action" value="tout_marquer_lu">
+    <button type="submit" class="btn btn-sm btn-ghost">
+      <i class="bi bi-check2-all me-1"></i>Tout marquer comme lu
+    </button>
+  </form>
+  {% endif %}
+</div>
+
+<!-- ── Liste des notifications ───────────────────────────────────── -->
+{% if notifications %}
+  <div class="d-flex flex-column gap-3">
+    {% for notif in notifications %}
+    <div class="card border-light shadow-sm {% if not notif.lue %}border-start border-primary border-3{% endif %}">
+      <div class="card-body d-flex align-items-start gap-3 p-3">
+
+        <!-- Icône selon le type -->
+        <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+             style="width:42px;height:42px;
+             {% if notif.type == 'match'    %}background:rgba(11,60,145,.1);color:var(--ml-primary);
+             {% elif notif.type == 'message' %}background:rgba(30,136,229,.1);color:var(--ml-secondary);
+             {% elif notif.type == 'offre'   %}background:rgba(46,125,50,.1); color:#2e7d32;
+             {% elif notif.type == 'demande' %}background:rgba(229,57,53,.1); color:#b91c1c;
+             {% else %}background:rgba(245,158,11,.1);color:#b45309;{% endif %}">
+          {% if notif.type == 'match'    %}<i class="bi bi-bullseye"></i>
+          {% elif notif.type == 'message' %}<i class="bi bi-chat-left-text-fill"></i>
+          {% elif notif.type == 'offre'   %}<i class="bi bi-hand-thumbs-up-fill"></i>
+          {% elif notif.type == 'demande' %}<i class="bi bi-search-heart-fill"></i>
+          {% else %}<i class="bi bi-bell-fill"></i>{% endif %}
+        </div>
+
+        <!-- Contenu -->
+        <div class="flex-grow-1">
+          <div class="d-flex justify-content-between align-items-start">
+            <p class="mb-1 small {% if not notif.lue %}fw-semibold text-dark{% else %}text-muted{% endif %}">
+              {{ notif.contenu }}
+            </p>
+            <span class="text-muted ms-3 flex-shrink-0"
+                  style="font-size:.7rem;white-space:nowrap;">
+              {{ notif.date_creation|timesince }} ago
+            </span>
+          </div>
+          <!-- Lien contextuel selon type -->
+          {% if notif.type == 'match' %}
+            <a href="{% url 'matching' %}" class="btn btn-xs btn-outline-primary btn-sm mt-1">
+              Voir le matching
+            </a>
+          {% elif notif.type == 'message' %}
+            <a href="{% url 'message' %}" class="btn btn-xs btn-outline-primary btn-sm mt-1">
+              Lire le message
+            </a>
+          {% elif notif.type == 'offre' %}
+            <a href="{% url 'offres' %}" class="btn btn-xs btn-outline-primary btn-sm mt-1">
+              Voir les offres
+            </a>
+          {% elif notif.type == 'demande' %}
+            <a href="{% url 'demandes' %}" class="btn btn-xs btn-outline-primary btn-sm mt-1">
+              Voir les demandes
+            </a>
+          {% endif %}
+        </div>
+
+        <!-- Point non-lu -->
+        {% if not notif.lue %}
+          <span class="rounded-circle bg-primary flex-shrink-0 mt-1"
+                style="width:8px;height:8px;display:inline-block;"></span>
+        {% endif %}
+
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+{% else %}
+  <!-- État vide -->
+  <div class="text-center py-5">
+    <i class="bi bi-bell-slash fs-1 text-muted d-block mb-3"></i>
+    <h6 class="fw-bold">Aucune notification pour l'instant.</h6>
+    <p class="text-muted small">
+      Vous serez notifié lorsqu'un étudiant correspond à votre profil, vous envoie un message, ou répond à votre offre ou demande.
+    </p>
+    <a href="{% url 'matching' %}" class="btn btn-outline-primary btn-sm mt-2">
+      <i class="bi bi-bullseye me-1"></i>Explorer le matching
+    </a>
+  </div>
+{% endif %}
+
+{% endblock %}

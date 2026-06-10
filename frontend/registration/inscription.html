@@ -1,75 +1,201 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inscription - MentorÉtude</title>
-    <link rel="stylesheet" href="assets/css/globalfont.css">
-    <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-blue-50 flex items-center justify-center min-h-screen p-4">
+{% extends "base.html" %}
+{% load static %}
 
-    <div class="bg-white w-full max-w-2xl rounded-2xl shadow-sm p-8 md:p-12">
-        <div class="text-center mb-10">
-            <div class="bg-indigo-600 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path d="M12 14l9-5-9-5-9 5 9 5z" />
-                    <path d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                </svg>
-            </div>
-            <h1 class="text-3xl font-bold text-gray-800">Inscription</h1>
-            <p class="text-gray-500 mt-2">Rejoignez notre plateforme de mentorat</p>
-        </div>
+{% block title %}Inscription{% endblock %}
 
-        <form method="post" action="{% url 'inscription' %}" class="space-y-6 text-left">
-            {% csrf_token %}
+{% block layout %}
+<div class="ml-auth-wrap">
 
-            <div class="space-y-4">
-                <h2 class="text-gray-700 font-semibold uppercase text-xs tracking-wider">Informations personnelles</h2>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        {{ form.first_name }}
-                    </div>
-                    <div>
-                        {{ form.last_name }}
-                    </div>
-                </div>
-            </div>
-
-            <div class="space-y-4">
-                <h2 class="text-gray-700 font-semibold uppercase text-xs tracking-wider">Informations de connexion</h2>
-                
-                <div class="w-full">
-                    {{ form.email }}
-                    {% if form.email.errors %}
-                        <p class="text-red-500 text-xs mt-1">{{ form.email.errors|striptags }}</p>
-                    {% endif %}
-                </div>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        {{ form.username }}
-                        {% if form.username.errors %}
-                            <p class="text-red-500 text-xs mt-1">{{ form.username.errors|striptags }}</p>
-                        {% endif %}
-                    </div>
-                    
-                    <div>
-                        {{ form.password }}
-                    </div>
-                </div>
-            </div>
-
-            <button type="submit" class="w-full text-center bg-indigo-600 text-white font-bold py-3 rounded-lg hover:bg-indigo-700 transition shadow-lg">
-                Créer mon compte
-            </button>
-        </form>
-        
-        <p class="mt-6 text-center text-sm">
-            Déjà inscrit ? <a href="{% url 'connexion' %}" class="text-indigo-600 font-bold hover:underline">Se connecter</a>
-        </p>
+  <!-- ── Panneau gauche décoratif ────────────────────────────── -->
+  <aside class="ml-auth-side">
+    <a href="{% url 'home' %}" class="ml-logo" style="color:#fff;">
+      <span class="ml-logo-mark"><i class="bi bi-mortarboard-fill"></i></span>
+      MentorLink
+    </a>
+    <div style="position:relative;z-index:2;">
+      <h2 class="text-white" style="font-size:2rem;line-height:1.2;">Rejoignez la communauté IFRI.</h2>
+      <p style="color:rgba(255,255,255,.8);" class="mt-3">
+        Quatre étapes simples pour configurer votre profil académique.
+        Publiez des offres ou des demandes selon vos besoins.
+      </p>
+      <ul class="list-unstyled mt-4" style="color:rgba(255,255,255,.85);">
+        <li class="mb-2">
+          <i class="bi bi-check-circle-fill me-2" style="color:var(--ml-accent);"></i>
+          Profil sécurisé et privé
+        </li>
+        <li class="mb-2">
+          <i class="bi bi-check-circle-fill me-2" style="color:var(--ml-accent);"></i>
+          Validation des matières par l'admin
+        </li>
+        <li class="mb-2">
+          <i class="bi bi-check-circle-fill me-2" style="color:var(--ml-accent);"></i>
+          Aucune publicité, aucun tracking commercial
+        </li>
+      </ul>
     </div>
+    <div class="small" style="color:rgba(255,255,255,.6);position:relative;z-index:2;">
+      © 2026 MentorLink — IFRI
+    </div>
+  </aside>
 
-    
-</body>
-</html>
+  <!-- ── Formulaire d'inscription ───────────────────────────── -->
+  <div class="ml-auth-form">
+    <div class="ml-auth-card" style="max-width:560px;">
+
+      <!-- Logo mobile uniquement -->
+      <div class="d-lg-none mb-4 text-center">
+        <a href="{% url 'home' %}" class="ml-logo">
+          <span class="ml-logo-mark"><i class="bi bi-mortarboard-fill"></i></span>
+          MentorLink
+        </a>
+      </div>
+
+      <!-- Indicateur de progression (visuel) -->
+      <div class="ml-stepper">
+        <div class="ml-step-pill active" data-step-pill="1"></div>
+        <div class="ml-step-pill" data-step-pill="2"></div>
+        <div class="ml-step-pill" data-step-pill="3"></div>
+        <div class="ml-step-pill" data-step-pill="4"></div>
+      </div>
+      <p class="text-muted-soft small mb-3">
+        <span id="regStepLabel">Étape 1 sur 4</span> —
+        <span id="regStepName">Informations personnelles</span>
+      </p>
+
+      <!-- Messages Django -->
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <!-- ── ÉTAPE 1 : Informations personnelles ── -->
+      <div class="reg-step" data-step="1">
+        <h3 class="mb-1">Créez votre compte</h3>
+        <p class="text-muted-soft mb-4">Vos informations de base pour démarrer.</p>
+
+        <form method="POST" action="{% url 'inscription' %}" id="formInscription">
+          {% csrf_token %}
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Nom</label>
+              {{ form.last_name }}
+              <input type="text" class="form-control" name="last_name"
+                     placeholder="KOSSOU"
+                     value="{{ request.POST.last_name|default:'' }}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Prénom</label>
+              {{ form.first_name }}
+              <input type="text" class="form-control" name="first_name"
+                     placeholder="Eyram"
+                     value="{{ request.POST.first_name|default:'' }}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Email</label>
+              {{ form.email }}
+              {% if form.email.errors %}
+                  <p class="text-red-500 text-xs mt-1">{{ form.email.errors|striptags }}</p>
+              {% endif %}
+              <input type="email" class="form-control" name="email"
+                     placeholder="prenom.nom@ifri.uac.bj"
+                     value="{{ request.POST.email|default:'' }}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Téléphone</label>
+              {{ form.telephone }}
+              {% if form.telephone.errors %}
+                  <p class="text-red-500 text-xs mt-1">{{ form.telephone.errors|striptags }}</p>
+              {% endif %}
+              <input type="tel" class="form-control" name="telephone"
+                     placeholder="+229 ..."
+                     value="{{ request.POST.telephone|default:'' }}">
+            </div>
+            <div class="col-12">
+              <label class="form-label">Nom d'utilisateur</label>
+              {{ form.username }}
+              {% if form.username.errors %}
+                  <p class="text-red-500 text-xs mt-1">{{ form.username.errors|striptags }}</p>
+              {% endif %}
+              <input type="text" class="form-control" name="username"
+                     placeholder="eyram_k"
+                     value="{{ request.POST.username|default:'' }}" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Mot de passe</label>
+              <div class="position-relative">
+                {{ form.password }}
+                <input type="password" class="form-control" name="password"
+                       id="regPwd" placeholder="••••••••" required>
+                <button type="button"
+                        class="btn position-absolute top-50 end-0 translate-middle-y me-1 text-muted-soft"
+                        onclick="togglePwd('regPwd', this)" tabindex="-1">
+                  <i class="bi bi-eye"></i>
+                </button>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Confirmation</label>
+              <div class="position-relative">
+                {{ form.password_confirm }}
+                <input type="password" class="form-control" name="password_confirm"
+                       id="regPwdC" placeholder="••••••••" required>
+                <button type="button"
+                        class="btn position-absolute top-50 end-0 translate-middle-y me-1 text-muted-soft"
+                        onclick="togglePwd('regPwdC', this)" tabindex="-1">
+                  <i class="bi bi-eye"></i>
+                </button>
+              </div>
+            </div>
+            <div class="col-12">
+              <div class="alert alert-light border small mb-0">
+                <i class="bi bi-shield-lock me-2" style="color:var(--ml-primary);"></i>
+                Utilisez au moins 8 caractères, dont une majuscule, un chiffre et un symbole.
+              </div>
+            </div>
+          </div>
+
+          <!-- Boutons de navigation -->
+          <div class="d-flex gap-2 mt-4">
+            <button type="button" class="btn btn-ghost flex-grow-0" id="regPrev"
+                    onclick="regStep(-1)" style="display:none;">
+              <i class="bi bi-arrow-left"></i> Précédent
+            </button>
+            <button type="submit" class="btn btn-primary flex-grow-1" id="regNext">
+              Créer mon compte <i class="bi bi-arrow-right ms-1"></i>
+            </button>
+          </div>
+
+          <p class="text-center mt-4 small text-muted-soft">
+            Vous avez déjà un compte ?
+            <a href="{% url 'connexion' %}" class="ml-link fw-semibold">Se connecter</a>
+          </p>
+
+        </form>
+      </div>
+      <!-- Fin étape 1 -->
+
+    </div>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function togglePwd(fieldId, btn) {
+  const field = document.getElementById(fieldId);
+  const icon  = btn.querySelector('i');
+  if (field.type === 'password') {
+    field.type     = 'text';
+    icon.className = 'bi bi-eye-slash';
+  } else {
+    field.type     = 'password';
+    icon.className = 'bi bi-eye';
+  }
+}
+</script>
+{% endblock %}

@@ -1,90 +1,206 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Mon Profil - MentorLink</title>
-</head>
-<body>
-    {% include 'header.html' %}
-    {% include 'navbar.html' %}
-    <button><a href="{% url 'connexion' %}" >deconnexion</a></button>
-    <header>
-        {% if profil.photo_profil %}
-            <img src="{{ profil.photo_profil }}" alt="Photo de profil" width="150" height="150">
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block page_title %}Mon Profil{% endblock %}
+
+{% block content %}
+
+{% include 'header.html' %}
+{% include 'navbar.html' %}
+
+<div class="row g-4">
+
+  <!-- ─── Colonne gauche : carte identité ──────────────────────── -->
+  <div class="col-lg-4">
+    <div class="card border-light shadow-sm mb-4">
+      <div class="card-body text-center pt-5 pb-4">
+
+        <!-- Photo de profil -->
+        <div class="position-relative d-inline-block mb-3">
+          {% if profil.photo %}
+            <img src="{{ profil.photo.url }}"
+                 alt="{{ profil.prenom }} {{ profil.nom }}"
+                 class="rounded-circle shadow-sm"
+                 style="width:120px;height:120px;object-fit:cover;">
+          {% else %}
+            <img src="https://ui-avatars.com/api/?name={{ profil.prenom|default:'U' }}+{{ profil.nom|default:'S' }}&background=0B3C91&color=fff&size=120"
+                 alt="Avatar"
+                 class="rounded-circle shadow-sm"
+                 style="width:120px;height:120px;">
+          {% endif %}
+          <a href="{% url 'modifier_profil' %}"
+             class="btn btn-sm btn-primary position-absolute bottom-0 end-0 rounded-circle"
+             style="width:32px;height:32px;padding:0;"
+             title="Changer la photo">
+            <i class="bi bi-camera-fill"></i>
+          </a>
+        </div>
+
+        <!-- Identité -->
+        <h5 class="fw-bold mb-1">
+          {{ profil.prenom|default:"—" }} {{ profil.nom|default:"" }}
+        </h5>
+        <p class="text-muted small mb-3">@{{ profil.username|default:"—" }}</p>
+        <div class="badge bg-primary bg-opacity-10 text-primary mb-3 px-3 py-2">
+          {{ profil.filiere|default:"Filière non renseignée" }}
+          {% if profil.filiere and profil.niveau %} • {% endif %}
+          {{ profil.niveau|default:"" }}
+        </div>
+
+        <hr class="border-light my-4">
+
+        <!-- Coordonnées -->
+        <div class="text-start">
+          <h6 class="fw-bold small text-uppercase text-muted mb-3">Coordonnées</h6>
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <i class="bi bi-envelope text-muted"></i>
+            <span class="small">{{ profil.email|default:"—" }}</span>
+          </div>
+          {% if profil.telephone %}
+          <div class="d-flex align-items-center gap-3 mb-2">
+            <i class="bi bi-telephone text-muted"></i>
+            <span class="small">{{ profil.telephone }}</span>
+          </div>
+          {% endif %}
+        </div>
+
+        <div class="d-grid mt-4">
+          <a href="{% url 'modifier_profil' %}" class="btn btn-outline-primary">
+            <i class="bi bi-pencil me-2"></i>Modifier le profil
+          </a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── Colonne droite : configuration académique ────────────── -->
+  <div class="col-lg-8">
+
+    <!-- Biographie -->
+    <div class="card border-light shadow-sm mb-4">
+      <div class="card-body p-4">
+        <h6 class="fw-bold mb-3 d-flex align-items-center gap-2">
+          <i class="bi bi-file-person text-primary"></i> Biographie
+        </h6>
+        {% if profil.bio %}
+          <p class="text-muted small mb-0">{{ profil.bio }}</p>
         {% else %}
-            <img src="https://api.dicebear.com/7.x/bottts/svg?seed={{ user_django.username }}" alt="Avatar par défaut" width="150" height="150">
+          <p class="text-muted small fst-italic mb-0">
+            Aucune biographie renseignée.
+            <a href="{% url 'modifier_profil' %}" class="text-primary">En ajouter une</a>
+          </p>
         {% endif %}
+      </div>
+    </div>
 
-        <h1>{{ user_django.first_name }} {{ user_django.last_name }}</h1>
-        <p>@{{ user_django.username }}</p>
+    <!-- Compétences & Lacunes -->
+    <div class="row g-4 mb-4">
 
-        <a href="{% url 'modifier_profil' %}">
-            <button type="button">Modifier le profil</button>
-        </a>
-    </header>
+      <!-- Je maîtrise -->
+      <div class="col-md-6">
+        <div class="card h-100 border-light shadow-sm">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                <i class="bi bi-lightbulb-fill text-success"></i> Je maîtrise
+              </h6>
+              <a href="{% url 'modifier_profil' %}" class="btn btn-sm btn-link text-primary p-0">
+                <i class="bi bi-pencil-square"></i>
+              </a>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+              {% for matiere in profil.matieres_fortes.all %}
+                <span class="badge badge-skill px-3 py-2">{{ matiere.nom }}</span>
+              {% empty %}
+                <p class="text-muted small fst-italic mb-0">
+                  Aucune matière renseignée.
+                </p>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
 
-    <hr>
+      <!-- J'ai besoin d'aide -->
+      <div class="col-md-6">
+        <div class="card h-100 border-light shadow-sm">
+          <div class="card-body p-4">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+              <h6 class="fw-bold mb-0 d-flex align-items-center gap-2">
+                <i class="bi bi-exclamation-circle-fill text-danger"></i> J'ai besoin d'aide en
+              </h6>
+              <a href="{% url 'modifier_profil' %}" class="btn btn-sm btn-link text-primary p-0">
+                <i class="bi bi-pencil-square"></i>
+              </a>
+            </div>
+            <div class="d-flex flex-wrap gap-2">
+              {% for matiere in profil.matieres_faibles.all %}
+                <span class="badge badge-gap px-3 py-2">{{ matiere.nom }}</span>
+              {% empty %}
+                <p class="text-muted small fst-italic mb-0">
+                  Aucune lacune renseignée.
+                </p>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
+      </div>
 
-    <section>
-        <h2>Informations personnelles & Académiques</h2>
-        <ul>
-            <li><strong>Email :</strong> {{ user_django.email }}</li>
-            <li><strong>Téléphone :</strong> {{ profil.telephone|default:"Non renseigné" }}</li>
-            <li><strong>Filière :</strong> {{ profil.filiere }}</li>
-            <li><strong>Niveau d'étude :</strong> {{ profil.niveau }}</li>
-            <li><strong>Date d'inscription :</strong> {{ user_django.date_joined|date:"d F Y" }}</li>
-        </ul>
+    </div>
 
-        <h3>Biographie / À propos de moi :</h3>
-        <p>{{ profil.bio|default:"Aucune biographie rédigée pour le moment." }}</p>
-    </section>
+    <!-- Disponibilités -->
+    <div class="card border-light shadow-sm">
+      <div class="card-body p-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h6 class="fw-bold mb-0 d-flex align-items-center gap-2">
+            <i class="bi bi-calendar-week-fill text-primary"></i> Mes disponibilités
+          </h6>
+          <a href="{% url 'modifier_profil' %}" class="btn btn-sm btn-link text-primary p-0">
+            <i class="bi bi-pencil-square"></i>
+          </a>
+        </div>
+        <p class="small text-muted mb-3">
+          Plages horaires où vous êtes disponible pour du mentorat.
+        </p>
+        <div class="table-responsive">
+          <table class="table table-bordered text-center align-middle small">
+            <thead class="bg-light">
+              <tr>
+                <th></th>
+                <th>Lun</th><th>Mar</th><th>Mer</th>
+                <th>Jeu</th><th>Ven</th><th>Sam</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for creneau in grille_disponibilites %}
+              <tr>
+                <td class="fw-medium text-muted bg-light">{{ creneau.label }}</td>
+                {% for jour in creneau.jours %}
+                <td class="avail-cell {% if jour.actif %}bg-primary bg-opacity-25 border-primary{% endif %}">
+                  {% if jour.actif %}<i class="bi bi-check-lg text-primary"></i>{% endif %}
+                </td>
+                {% endfor %}
+              </tr>
+              {% empty %}
+              <tr>
+                <td colspan="7" class="text-muted fst-italic py-3">
+                  Aucune disponibilité renseignée.
+                  <a href="{% url 'modifier_profil' %}" class="text-primary">En ajouter</a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
 
-    <hr>
+  </div>
+</div>
 
-    <section>
-        <h2>Mon Profil de Compétences</h2>
-
-        <article>
-            <h3>🟢 Mes Points Forts (Maîtrises)</h3>
-            {% if points_forts %}
-                <ul>
-                    {% for maitrise in points_forts %}
-                        <li>
-                            <strong>{{ maitrise.domaine.nom }}</strong> - Niveau : {{ maitrise.niveau_maitrise }}
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>Aucun point fort enregistré.</p>
-            {% endif %}
-        </article>
-
-        <br>
-
-        <article>
-            <h3>🔴 Mes Points Faibles (Besoins d'aide)</h3>
-            {% if points_faibles %}
-                <ul>
-                    {% for besoin in points_faibles %}
-                        <li>
-<<<<<<< HEAD
-                            <strong>{{ besoin.domaine.nom }}</strong> - Priorité / Urgence : {{ besoin.niveau_priorite }}/5
-=======
-                            <strong>{{ besoin.domaine.nom }}</strong> - Priorité / Urgence : {{besoin.niveau_priorite }}/5
->>>>>>> origin/feature/auth-structure
-                        </li>
-                    {% endfor %}
-                </ul>
-            {% else %}
-                <p>Aucun besoin d'aide enregistré.</p>
-            {% endif %}
-        </article>
-    </section>
-
-</body>
-</html>
-
-
-
-
+<style>
+.avail-cell { transition: background .2s; cursor: default; }
+.badge-gap  { background: rgba(229,57,53,.10); color: #b8302d; }
+</style>
+{% endblock %}

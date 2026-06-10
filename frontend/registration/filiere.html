@@ -1,49 +1,133 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Onboarding - Filière et Niveau</title>
-</head>
-<body>
+{% extends "base.html" %}
+{% load static %}
 
-    <h1>Étape 1 : Votre parcours universitaire</h1>
-    <p>Sélectionnez votre filière d'étude et votre niveau actuel à l'IFRI.</p>
+{% block title %}Votre filière{% endblock %}
 
-    <form method="post" action="">
-        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+{% block layout %}
 
-        <div>
-            <label for="filiere">Votre Filière :</label>
-            <select id="filiere" name="filiere" required>
-                <option value="" disabled selected>-- Choisissez votre filière --</option>
-                <option value="GL">Génie Logiciel (GL)</option>
-                <option value="IA">Intelligence Artificielle (IA)</option>
-                <option value="SEIOT">Systèmes Embarqués & IoT (SEIOT)</option>
-                <option value="CYBERSECURITE">Cybersécurité (CYBERSECURITE)</option>
-                <option value="IM">Internet et Multimédia (IM)</option>
-            </select>
+{# 
+  Vue : etape_filiere_view (accounts/views.py)
+  URL  : /completer-profil/filiere/  (name='etape_filiere')
+  Redirect après : etape_maitrise
+  Champs POST attendus : filiere (str), niveau (str)
+#}
+
+<div class="ml-auth-wrap">
+
+  <!-- ── Panneau gauche ─────────────────────────────────────────── -->
+  <aside class="ml-auth-side">
+    <a href="{% url 'home' %}" class="ml-logo" style="color:#fff;">
+      <span class="ml-logo-mark"><i class="bi bi-mortarboard-fill"></i></span>
+      MentorLink
+    </a>
+    <div style="position:relative;z-index:2;">
+      <h2 class="text-white" style="font-size:2rem;line-height:1.2;">
+        Étape 1 sur 2 : Votre parcours.
+      </h2>
+      <p style="color:rgba(255,255,255,.8);" class="mt-3">
+        Indiquez votre filière et votre niveau à l'IFRI. Ces informations servent à cibler les matchs les plus pertinents pour vous.
+      </p>
+      <!-- Indicateur d'étape -->
+      <div class="d-flex gap-2 mt-5">
+        <div style="width:32px;height:4px;background:#fff;border-radius:2px;"></div>
+        <div style="width:32px;height:4px;background:rgba(255,255,255,.3);border-radius:2px;"></div>
+      </div>
+      <p class="small mt-2" style="color:rgba(255,255,255,.6);">Étape 1 sur 2</p>
+    </div>
+    <div class="small" style="color:rgba(255,255,255,.6);position:relative;z-index:2;">
+      © 2026 MentorLink — IFRI
+    </div>
+  </aside>
+
+  <!-- ── Formulaire ─────────────────────────────────────────────── -->
+  <div class="ml-auth-form">
+    <div class="ml-auth-card" style="max-width:480px;">
+
+      <!-- Logo mobile -->
+      <div class="d-lg-none mb-4 text-center">
+        <a href="{% url 'home' %}" class="ml-logo">
+          <span class="ml-logo-mark"><i class="bi bi-mortarboard-fill"></i></span>
+          MentorLink
+        </a>
+      </div>
+
+      <h3 class="mb-1">Votre parcours universitaire</h3>
+      <p class="text-muted mb-4 small">
+        Ces informations alimentent l'algorithme de matching (pondération 10-20%).
+      </p>
+
+      <!-- Messages Django -->
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags }} alert-dismissible fade show mb-3" role="alert">
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      <form method="POST" action="">
+        {% csrf_token %}
+
+        <!-- Filière -->
+        <div class="mb-4">
+          <label class="form-label fw-medium">Votre filière à l'IFRI</label>
+          <select class="form-select" name="filiere" required>
+            <option value="" disabled selected>— Choisissez votre filière —</option>
+            <option value="GL">Génie Logiciel (GL)</option>
+            <option value="IA">Intelligence Artificielle (IA)</option>
+            <option value="SEIOT">Systèmes Embarqués &amp; IoT (SEIOT)</option>
+            <option value="CYBERSECURITE">Cybersécurité</option>
+            <option value="IM">Internet et Multimédia (IM)</option>
+          </select>
         </div>
 
-        <br>
+        <!-- Niveau -->
+        <div class="mb-5">
+          <label class="form-label fw-medium">Votre niveau d'étude</label>
+          <div class="d-flex flex-column gap-2 mt-1">
 
-        <div>
-            <label>Votre niveau d'étude :</label>
-            <br>
-            <input type="radio" id="l1" name="niveau" value="LICENCE_1" required>
-            <label for="l1">Licence 1</label>
-            <br>
-            <input type="radio" id="l2" name="niveau" value="LICENCE_2">
-            <label for="l2">Licence 2</label>
-            <br>
-            <input type="radio" id="l3" name="niveau" value="LICENCE_3">
-            <label for="l3">Licence 3</label>
+            <label class="d-flex align-items-center gap-3 p-3 border rounded-3 cursor-pointer"
+                   style="cursor:pointer;" onclick="this.querySelector('input').checked=true; document.querySelectorAll('.niveau-card').forEach(c=>c.classList.remove('border-primary','bg-primary','bg-opacity-10')); this.classList.add('border-primary','bg-primary','bg-opacity-10')">
+              <input type="radio" name="niveau" value="LICENCE_1" class="form-check-input m-0" required>
+              <span class="fw-medium">Licence 1</span>
+            </label>
+
+            <label class="d-flex align-items-center gap-3 p-3 border rounded-3 cursor-pointer"
+                   style="cursor:pointer;" onclick="this.querySelector('input').checked=true; document.querySelectorAll('.niveau-card').forEach(c=>c.classList.remove('border-primary','bg-primary','bg-opacity-10')); this.classList.add('border-primary','bg-primary','bg-opacity-10')">
+              <input type="radio" name="niveau" value="LICENCE_2" class="form-check-input m-0">
+              <span class="fw-medium">Licence 2</span>
+            </label>
+
+            <label class="d-flex align-items-center gap-3 p-3 border rounded-3 cursor-pointer"
+                   style="cursor:pointer;" onclick="this.querySelector('input').checked=true; document.querySelectorAll('.niveau-card').forEach(c=>c.classList.remove('border-primary','bg-primary','bg-opacity-10')); this.classList.add('border-primary','bg-primary','bg-opacity-10')">
+              <input type="radio" name="niveau" value="LICENCE_3" class="form-check-input m-0">
+              <span class="fw-medium">Licence 3</span>
+            </label>
+
+            <label class="d-flex align-items-center gap-3 p-3 border rounded-3 cursor-pointer"
+                   style="cursor:pointer;" onclick="this.querySelector('input').checked=true; document.querySelectorAll('.niveau-card').forEach(c=>c.classList.remove('border-primary','bg-primary','bg-opacity-10')); this.classList.add('border-primary','bg-primary','bg-opacity-10')">
+              <input type="radio" name="niveau" value="MASTER_1" class="form-check-input m-0">
+              <span class="fw-medium">Master 1</span>
+            </label>
+
+            <label class="d-flex align-items-center gap-3 p-3 border rounded-3 cursor-pointer"
+                   style="cursor:pointer;" onclick="this.querySelector('input').checked=true; document.querySelectorAll('.niveau-card').forEach(c=>c.classList.remove('border-primary','bg-primary','bg-opacity-10')); this.classList.add('border-primary','bg-primary','bg-opacity-10')">
+              <input type="radio" name="niveau" value="MASTER_2" class="form-check-input m-0">
+              <span class="fw-medium">Master 2</span>
+            </label>
+
+          </div>
         </div>
 
-        <br>
+        <button type="submit" class="btn btn-primary w-100 py-3 fw-semibold">
+          Continuer <i class="bi bi-arrow-right ms-2"></i>
+        </button>
 
-        <button type="submit">Valider et continuer</button>
-    </form>
+      </form>
+    </div>
+  </div>
 
-</body>
-</html>
+</div>
+
+{% endblock %}

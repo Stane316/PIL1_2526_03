@@ -1,90 +1,252 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-<<<<<<< HEAD
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Matching - MentorLink</title>
-=======
-    <title>Matching - MentorLink</title>
-    <style>
-        .nav-tabs { display: flex; gap: 10px; margin: 20px 0; border-bottom: 2px solid #ccc; padding-bottom: 10px; }
-        .tab-btn { padding: 10px 20px; text-decoration: none; background: #eee; color: #333; border-radius: 5px; border: 1px solid #ccc; }
-        .tab-btn.active { background: #007bff; color: white; font-weight: bold; }
-        .matching-container { display: flex; gap: 30px; margin-top: 20px; }
-        .form-section { flex: 1; background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #ddd; }
-        .result-section { flex: 2; }
-        .profile-card { border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; border-radius: 10px; display: flex; gap: 15px; align-items: center; position: relative; }
-        .profile-img { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; }
-        .badge-score { position: absolute; top: 15px; right: 15px; background: #28a745; color: white; padding: 5px 10px; border-radius: 20px; font-weight: bold; }
-    </style>
->>>>>>> origin/feature/auth-structure
-</head>
-<body>
-    {% include 'header.html' %}
-    {% include 'navbar.html' %}
+{% extends "base_dashboard.html" %}
+{% load static %}
 
-    <main style="padding: 20px;">
-        <h2>Espace Matching Intelligent</h2>
-        <p>Trouvez instantanément les profils idéaux selon vos compétences et vos lacunes académiques.</p>
+{% block page_title %}Matching & Suggestions{% endblock %}
 
-        <div class="nav-tabs">
-            <a href="?tab=offres" class="tab-btn {% if onglet_actif == 'offres' %}active{% endif %}">Offres correspondantes (Trouver un mentor)</a>
-            <a href="?tab=demandes" class="tab-btn {% if onglet_actif == 'demandes' %}active{% endif %}">Demandes correspondantes (Aider un élève)</a>
-        </div>
+{% block content %}
 
-        <div class="matching-container">
-            
-            <div class="form-section">
-                {% if onglet_actif == 'offres' %}
-                    <h3>Recherche spécifique (Besoin ciblé)</h3>
-                    <p style="font-size: 0.9em; color: #666;">Cochez parmi vos besoins pour filtrer les mentors :</p>
-                    
-                    <form method="POST">
-                        {% csrf_token %}
-                        <div style="max-height: 200px; overflow-y: auto;">
-                            {% for pf in points_faibles %}
-                                <label>
-                                    <input type="checkbox" name="matieres_faibles" value="{{ pf.domaine.id }}">
-                                    {{ pf.domaine.nom }}
-                                </label><br>
-                            {% empty %}
-                                <p style="color: #999; font-size: 0.9em;">Aucun besoin enregistré dans votre profil.</p>
-                            {% endfor %}
-                        </div>
-                        <button type="submit" name="submit_demande_specifique" style="margin-top: 10px;">Calculer la compatibilité</button>
-                    </form>
+{# CORRECTION : suppression des {% include 'header.html' %} et {% include 'navbar.html' %} parasites
+   CORRECTION PRINCIPALE : Les variables matching_results / match.prenom / match.matieres_communes
+   n'existent PAS dans le contexte. La vue envoie :
+     - offres_compatibles  → liste de dicts {utilisateur, matieres, score}  (onglet "Trouver un mentor")
+     - demandes_compatibles → liste de dicts {utilisateur, matieres, score} (onglet "Aider un étudiant")
+     - onglet_actif         → 'offres' ou 'demandes'
+     - tous_les_domaines    → QuerySet de Domaine (pour les filtres POST)
+     - points_faibles / points_forts → QuerySet Besoin/Maitrise du profil connecté
+#}
 
-                {% else %}
-                    <h3>Recherche spécifique (Offre ciblée)</h3>
-                    <p style="font-size: 0.9em; color: #666;">Cochez parmi vos compétences pour filtrer les élèves :</p>
-                    
-                    <form method="POST">
-                        {% csrf_token %}
-                        <div style="max-height: 200px; overflow-y: auto;">
-                            {% for pf in points_forts %}
-                                <label>
-                                    <input type="checkbox" name="matieres_fortes" value="{{ pf.domaine.id }}">
-                                    {{ pf.domaine.nom }}
-                                </label><br>
-                            {% empty %}
-                                <p style="color: #999; font-size: 0.9em;">Aucune maîtrise enregistrée dans votre profil.</p>
-                            {% endfor %}
-                        </div>
-                        <button type="submit" name="submit_offre_specifique" style="margin-top: 10px;">Calculer la compatibilité</button>
-                    </form>
-                {% endif %}
+<div class="mb-4">
+  <p class="text-muted">
+    Découvrez les profils les plus compatibles avec vos compétences, lacunes et disponibilités.
+  </p>
+</div>
+
+<!-- ── Encart pédagogique : explication du score ───────────────── -->
+<div class="card border-primary border-opacity-25 bg-primary bg-opacity-10 shadow-sm mb-4">
+  <div class="card-body d-flex gap-3 align-items-start p-4">
+    <i class="bi bi-info-circle-fill text-primary fs-3"></i>
+    <div>
+      <h6 class="fw-bold text-primary mb-2">Comment le score est-il calculé ?</h6>
+      <div class="row g-2 small text-dark">
+        <div class="col-md-3"><strong>60%</strong> : Matières compatibles</div>
+        <div class="col-md-3"><strong>20%</strong> : Disponibilités communes</div>
+        <div class="col-md-3"><strong>10%</strong> : Même filière</div>
+        <div class="col-md-3"><strong>10%</strong> : Niveau académique</div>
+      </div>
+      <p class="mb-0 mt-2 small text-muted fst-italic">
+        L'algorithme de MentorLink garantit des recommandations pertinentes pour votre réussite.
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- ── Onglets : Trouver un mentor / Aider un étudiant ──────────── -->
+<ul class="nav nav-tabs mb-4">
+  <li class="nav-item">
+    <a class="nav-link {% if onglet_actif == 'offres' %}active{% endif %}"
+       href="{% url 'matching' %}?tab=offres">
+      <i class="bi bi-person-raised-hand me-1"></i>Trouver un mentor
+      <span class="badge bg-primary ms-1">{{ offres_compatibles|length }}</span>
+    </a>
+  </li>
+  <li class="nav-item">
+    <a class="nav-link {% if onglet_actif == 'demandes' %}active{% endif %}"
+       href="{% url 'matching' %}?tab=demandes">
+      <i class="bi bi-people-fill me-1"></i>Aider un étudiant
+      <span class="badge bg-secondary ms-1">{{ demandes_compatibles|length }}</span>
+    </a>
+  </li>
+</ul>
+
+<!-- ── Filtres POST (choix des matières spécifiques) ────────────── -->
+{% if onglet_actif == 'offres' %}
+<div class="card border-light shadow-sm mb-4">
+  <div class="card-body py-3">
+    <form method="POST" action="{% url 'matching' %}?tab=offres" class="row g-3 align-items-end">
+      {% csrf_token %}
+      <div class="col-md-9">
+        <label class="form-label small text-muted">
+          Filtrer par matières spécifiques que je veux apprendre :
+        </label>
+        <div class="d-flex flex-wrap gap-2">
+          {% for domaine in tous_les_domaines %}
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox"
+                     name="matieres_faibles"
+                     value="{{ domaine.id }}"
+                     id="dom_{{ domaine.id }}">
+              <label class="form-check-label small" for="dom_{{ domaine.id }}">
+                {{ domaine.nom }}
+              </label>
             </div>
-
-            <div class="result-section">
-                {% if onglet_actif == 'offres' %}
-                    {% include 'offres_correspondantes.html' %}
-                {% else %}
-                    {% include 'demandes_correspondantes.html' %}
-                {% endif %}
+          {% endfor %}
+        </div>
+      </div>
+      <div class="col-md-3">
+        <button type="submit" name="submit_demande_specifique" class="btn btn-primary btn-sm w-100">
+          <i class="bi bi-funnel me-1"></i>Appliquer le filtre
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% else %}
+<div class="card border-light shadow-sm mb-4">
+  <div class="card-body py-3">
+    <form method="POST" action="{% url 'matching' %}?tab=demandes" class="row g-3 align-items-end">
+      {% csrf_token %}
+      <div class="col-md-9">
+        <label class="form-label small text-muted">
+          Filtrer par matières que je peux enseigner :
+        </label>
+        <div class="d-flex flex-wrap gap-2">
+          {% for domaine in tous_les_domaines %}
+            <div class="form-check form-check-inline">
+              <input class="form-check-input" type="checkbox"
+                     name="matieres_fortes"
+                     value="{{ domaine.id }}"
+                     id="dom2_{{ domaine.id }}">
+              <label class="form-check-label small" for="dom2_{{ domaine.id }}">
+                {{ domaine.nom }}
+              </label>
             </div>
+          {% endfor %}
+        </div>
+      </div>
+      <div class="col-md-3">
+        <button type="submit" name="submit_offre_specifique" class="btn btn-primary btn-sm w-100">
+          <i class="bi bi-funnel me-1"></i>Appliquer le filtre
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endif %}
+
+<!-- ── Résultats de matching ────────────────────────────────────── -->
+{% if onglet_actif == 'offres' %}
+  {# Onglet "Trouver un mentor" : on itère sur offres_compatibles #}
+  <div class="row g-4">
+    {% for match in offres_compatibles %}
+    <div class="col-md-6 col-xl-4">
+      <div class="card h-100 border-light shadow-sm">
+        <div class="card-body">
+
+          <!-- En-tête : avatar + nom + score -->
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="d-flex gap-3">
+              <img src="https://ui-avatars.com/api/?name={{ match.utilisateur.prenom }}+{{ match.utilisateur.nom }}&background=random"
+                   class="rounded-circle" width="56" height="56" alt="Avatar">
+              <div>
+                <h6 class="mb-0 fw-bold">{{ match.utilisateur.prenom }} {{ match.utilisateur.nom }}</h6>
+                <p class="mb-0 small text-muted">{{ match.utilisateur.filiere }} • {{ match.utilisateur.niveau }}</p>
+              </div>
+            </div>
+            <div class="text-center">
+              <div class="matching-score {% if match.score >= 80 %}score-excellent{% else %}score-good{% endif %}">
+                {{ match.score }}%
+              </div>
+              <span class="small text-muted" style="font-size:.7rem;">Score global</span>
+            </div>
+          </div>
+
+          <!-- Matières compatibles -->
+          <div class="mb-3">
+            <span class="small text-muted fw-medium d-block mb-1">Matières compatibles :</span>
+            <div class="d-flex flex-wrap gap-1">
+              {% for matiere in match.matieres %}
+                <span class="badge badge-skill">{{ matiere }}</span>
+              {% empty %}
+                <span class="text-muted small fst-italic">Aucune matière commune</span>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Bouton contacter -->
+          <a href="{% url 'message' %}" class="btn btn-primary w-100">
+            <i class="bi bi-chat-left-text me-2"></i>Contacter ce mentor
+          </a>
 
         </div>
-    </main>
-</body>
-</html>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="alert alert-light border text-center py-5">
+        <i class="bi bi-search fs-2 text-muted d-block mb-3"></i>
+        <h6 class="fw-bold">Aucun mentor compatible trouvé.</h6>
+        <p class="text-muted small mb-3">
+          Complétez votre profil avec vos lacunes pour que l'algorithme vous propose des mentors.
+        </p>
+        <a href="{% url 'modifier_profil' %}" class="btn btn-outline-primary btn-sm">
+          Compléter mon profil
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+
+{% else %}
+  {# Onglet "Aider un étudiant" : on itère sur demandes_compatibles #}
+  <div class="row g-4">
+    {% for match in demandes_compatibles %}
+    <div class="col-md-6 col-xl-4">
+      <div class="card h-100 border-light shadow-sm">
+        <div class="card-body">
+
+          <!-- En-tête : avatar + nom + score -->
+          <div class="d-flex justify-content-between align-items-start mb-3">
+            <div class="d-flex gap-3">
+              <img src="https://ui-avatars.com/api/?name={{ match.utilisateur.prenom }}+{{ match.utilisateur.nom }}&background=random"
+                   class="rounded-circle" width="56" height="56" alt="Avatar">
+              <div>
+                <h6 class="mb-0 fw-bold">{{ match.utilisateur.prenom }} {{ match.utilisateur.nom }}</h6>
+                <p class="mb-0 small text-muted">{{ match.utilisateur.filiere }} • {{ match.utilisateur.niveau }}</p>
+              </div>
+            </div>
+            <div class="text-center">
+              <div class="matching-score {% if match.score >= 80 %}score-excellent{% else %}score-good{% endif %}">
+                {{ match.score }}%
+              </div>
+              <span class="small text-muted" style="font-size:.7rem;">Score global</span>
+            </div>
+          </div>
+
+          <!-- Matières où cet étudiant a besoin d'aide -->
+          <div class="mb-3">
+            <span class="small text-muted fw-medium d-block mb-1">Matières où je peux l'aider :</span>
+            <div class="d-flex flex-wrap gap-1">
+              {% for matiere in match.matieres %}
+                <span class="badge badge-skill">{{ matiere }}</span>
+              {% empty %}
+                <span class="text-muted small fst-italic">Aucune matière commune</span>
+              {% endfor %}
+            </div>
+          </div>
+
+          <!-- Bouton contacter -->
+          <a href="{% url 'message' %}" class="btn btn-outline-primary w-100">
+            <i class="bi bi-chat-left-text me-2"></i>Proposer mon aide
+          </a>
+
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="alert alert-light border text-center py-5">
+        <i class="bi bi-people fs-2 text-muted d-block mb-3"></i>
+        <h6 class="fw-bold">Aucun étudiant à aider trouvé.</h6>
+        <p class="text-muted small mb-3">
+          Complétez votre profil avec vos points forts pour que l'algorithme trouve des étudiants à aider.
+        </p>
+        <a href="{% url 'modifier_profil' %}" class="btn btn-outline-primary btn-sm">
+          Compléter mon profil
+        </a>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+{% endif %}
+
+{% endblock %}

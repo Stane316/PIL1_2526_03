@@ -1,16 +1,229 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Messages - MentorLink</title>
-</head>
-<body>
-    {% include 'header.html' %}
-    {% include 'navbar.html' %}
-    <main>
-        <h2>Contenu : Messages</h2>
-        <p>Espace réservé aux discussions de la messagerie interne.</p>
-    </main>
-</body>
-</html>
+{% extends "base_dashboard.html" %}
+{% load static %}
+
+{% block page_title %}Messagerie{% endblock %}
+
+{% block content %}
+
+{% include 'header.html' %}
+{% include 'navbar.html' %}
+
+<div class="card border-light shadow-sm overflow-hidden" style="min-height:600px;">
+  <div class="row g-0" style="height:600px;">
+
+    <!-- ════════════════════════════════════════════════════════════
+         COLONNE GAUCHE : Liste des conversations
+         ════════════════════════════════════════════════════════════ -->
+    <div class="col-md-4 border-end border-light bg-white d-flex flex-column" style="height:600px;">
+
+      <!-- Recherche -->
+      <div class="p-3 border-bottom border-light">
+        <div class="input-group input-group-sm">
+          <span class="input-group-text bg-light border-end-0">
+            <i class="bi bi-search text-muted"></i>
+          </span>
+          <input type="text" class="form-control border-start-0 bg-light"
+                 placeholder="Chercher une discussion..." id="searchConv">
+        </div>
+      </div>
+
+      <!-- Liste des conversations -->
+      <div class="overflow-auto flex-grow-1" id="convList">
+        {% for conversation in conversations %}
+        <a href="{% url 'message' %}?conv={{ conversation.id }}"
+           class="text-decoration-none text-dark d-block p-3 border-bottom border-light position-relative
+                  {% if conversation.id == conversation_active.id %}bg-primary bg-opacity-10{% endif %}">
+          {% if conversation.id == conversation_active.id %}
+            <div class="position-absolute top-0 start-0 h-100 bg-primary" style="width:3px;"></div>
+          {% endif %}
+          <div class="d-flex align-items-center gap-3">
+            <div class="position-relative">
+              <img src="https://ui-avatars.com/api/?name={{ conversation.interlocuteur.prenom }}+{{ conversation.interlocuteur.nom }}&background=random"
+                   class="rounded-circle" width="40" height="40" alt="Avatar">
+              {% if conversation.interlocuteur.en_ligne %}
+                <span class="position-absolute bottom-0 end-0 bg-success border border-white rounded-circle"
+                      style="width:10px;height:10px;"></span>
+              {% endif %}
+            </div>
+            <div class="flex-grow-1 min-w-0">
+              <div class="d-flex justify-content-between align-items-center mb-1">
+                <h6 class="mb-0 fw-bold fs-6 text-truncate">
+                  {{ conversation.interlocuteur.prenom }} {{ conversation.interlocuteur.nom }}
+                </h6>
+                <span class="small {% if conversation.id == conversation_active.id %}text-primary{% else %}text-muted{% endif %} fw-medium"
+                      style="font-size:.7rem;white-space:nowrap;">
+                  {{ conversation.dernier_message.date|date:"H:i" }}
+                </span>
+              </div>
+              <p class="mb-0 small text-muted text-truncate
+                         {% if conversation.id == conversation_active.id %}fw-medium{% endif %}">
+                {{ conversation.dernier_message.contenu|truncatechars:45 }}
+              </p>
+            </div>
+            {% if conversation.nb_non_lus %}
+              <span class="badge bg-primary rounded-pill">{{ conversation.nb_non_lus }}</span>
+            {% endif %}
+          </div>
+        </a>
+        {% empty %}
+        <div class="p-4 text-center text-muted">
+          <i class="bi bi-chat-square-dots fs-3 d-block mb-2"></i>
+          <p class="small mb-0">Aucune conversation pour l'instant.</p>
+          <p class="small">Contactez un profil depuis
+            <a href="{% url 'matching' %}" class="text-primary">Matching</a> ou
+            <a href="{% url 'offres' %}" class="text-primary">Offres</a>.
+          </p>
+        </div>
+        {% endfor %}
+      </div>
+
+    </div>
+
+    <!-- ════════════════════════════════════════════════════════════
+         COLONNE DROITE : Fenêtre de chat
+         ════════════════════════════════════════════════════════════ -->
+    <div class="col-md-8 d-flex flex-column" style="height:600px;background-color:var(--bg-body, #f5f7fb);">
+
+      {% if conversation_active %}
+
+        <!-- En-tête du chat -->
+        <div class="p-3 bg-white border-bottom border-light d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-3">
+            <img src="https://ui-avatars.com/api/?name={{ conversation_active.interlocuteur.prenom }}+{{ conversation_active.interlocuteur.nom }}&background=random"
+                 class="rounded-circle" width="40" height="40" alt="Avatar">
+            <div>
+              <h6 class="mb-0 fw-bold">
+                {{ conversation_active.interlocuteur.prenom }}
+                {{ conversation_active.interlocuteur.nom }}
+              </h6>
+              {% if conversation_active.interlocuteur.en_ligne %}
+                <span class="small text-success d-flex align-items-center gap-1">
+                  <i class="bi bi-circle-fill" style="font-size:.4rem;"></i> En ligne
+                </span>
+              {% else %}
+                <span class="small text-muted">Hors ligne</span>
+              {% endif %}
+            </div>
+          </div>
+          <div class="d-flex align-items-center gap-2">
+            {% if conversation_active.sujet %}
+              <span class="badge bg-primary bg-opacity-10 text-primary">
+                Sujet : {{ conversation_active.sujet }}
+              </span>
+            {% endif %}
+            <a href="{% url 'profil' %}" class="btn btn-sm btn-link text-muted" title="Voir le profil">
+              <i class="bi bi-person-circle"></i>
+            </a>
+          </div>
+        </div>
+
+        <!-- Zone de messages -->
+        <div class="flex-grow-1 p-4 overflow-auto d-flex flex-column gap-3"
+             id="chatBody" style="scroll-behavior:smooth;">
+
+          <div class="text-center my-2">
+            <span class="badge bg-light text-muted border border-light fw-normal">
+              {{ conversation_active.date_debut|date:"d F Y" }}
+            </span>
+          </div>
+
+          {% for msg in messages_conv %}
+
+            {% if msg.expediteur == profil %}
+            <!-- Message envoyé (moi) -->
+            <div class="d-flex gap-2 align-self-end">
+              <div class="bg-primary text-white p-3 rounded-3 shadow-sm"
+                   style="max-width:75%;border-bottom-right-radius:0!important;">
+                <p class="mb-1 small">{{ msg.contenu }}</p>
+                <span class="text-white-50 d-block text-end" style="font-size:.65rem;">
+                  {{ msg.date|date:"H:i" }}
+                  {% if msg.lu %}<i class="bi bi-check2-all ms-1"></i>{% endif %}
+                </span>
+              </div>
+            </div>
+
+            {% else %}
+            <!-- Message reçu -->
+            <div class="d-flex gap-2">
+              <img src="https://ui-avatars.com/api/?name={{ msg.expediteur.prenom }}+{{ msg.expediteur.nom }}&background=random"
+                   class="rounded-circle align-self-end" width="28" height="28" alt="Avatar">
+              <div class="bg-white p-3 rounded-3 shadow-sm"
+                   style="max-width:75%;border-bottom-left-radius:0!important;">
+                <p class="mb-1 text-dark small">{{ msg.contenu }}</p>
+                <span class="text-muted d-block text-end" style="font-size:.65rem;">
+                  {{ msg.date|date:"H:i" }}
+                </span>
+              </div>
+            </div>
+            {% endif %}
+
+          {% empty %}
+          <div class="text-center text-muted mt-5">
+            <i class="bi bi-chat-dots fs-3 d-block mb-2"></i>
+            <p class="small">Aucun message. Commencez la conversation !</p>
+          </div>
+          {% endfor %}
+
+        </div>
+
+        <!-- Zone de saisie -->
+        <div class="p-3 bg-white border-top border-light">
+          <form method="POST" action="{% url 'message' %}" class="d-flex gap-2 align-items-center">
+            {% csrf_token %}
+            <input type="hidden" name="conv_id" value="{{ conversation_active.id }}">
+            <button type="button"
+                    class="btn btn-light text-muted rounded-circle flex-shrink-0"
+                    style="width:40px;height:40px;padding:0;"
+                    title="Pièce jointe (bientôt disponible)" disabled>
+              <i class="bi bi-paperclip"></i>
+            </button>
+            <input type="text" class="form-control bg-light border-0 py-2"
+                   name="contenu"
+                   placeholder="Écrivez un message..."
+                   autocomplete="off" required>
+            <button type="submit"
+                    class="btn btn-primary rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
+                    style="width:40px;height:40px;padding:0;">
+              <i class="bi bi-send-fill" style="margin-left:-2px;"></i>
+            </button>
+          </form>
+        </div>
+
+      {% else %}
+        <!-- Aucune conversation sélectionnée -->
+        <div class="flex-grow-1 d-flex flex-column align-items-center justify-content-center text-muted">
+          <i class="bi bi-chat-left-text fs-1 mb-3" style="color:var(--ml-border);"></i>
+          <h6 class="fw-bold">Sélectionnez une conversation</h6>
+          <p class="small text-center px-4">
+            Choisissez une discussion dans la liste à gauche, ou démarrez-en une depuis
+            <a href="{% url 'matching' %}" class="text-primary">Matching</a>.
+          </p>
+        </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Scroll automatique vers le dernier message
+  const chatBody = document.getElementById('chatBody');
+  if (chatBody) chatBody.scrollTop = chatBody.scrollHeight;
+
+  // Filtrage en direct des conversations
+  const searchInput = document.getElementById('searchConv');
+  if (searchInput) {
+    searchInput.addEventListener('input', function () {
+      const q = this.value.toLowerCase();
+      document.querySelectorAll('#convList a').forEach(function (item) {
+        const name = item.querySelector('h6')?.textContent.toLowerCase() || '';
+        const preview = item.querySelector('p')?.textContent.toLowerCase() || '';
+        item.style.display = (name.includes(q) || preview.includes(q)) ? '' : 'none';
+      });
+    });
+  }
+</script>
+{% endblock %}
