@@ -1,4 +1,5 @@
 from django.shortcuts import render, redirect
+from django.contrib import messages  # Importation des messages d'erreur Django
 from app.core.models import Utilisateur, Domaine, Besoin, Maitrise
 from app.publications.models import Demande, DemandeDomaine, DemandeDisponibilite
 from app.publications.forms import JOURS_CHOICES, MOMENTS_CHOICES
@@ -21,16 +22,18 @@ def matching_view(request):
     """
     Vue principale du matching — Application 'matching'
     """
-    # 1. Récupération sécurisée de l'utilisateur connecté pour éviter le crash AuthUser DoesNotExist
+    # Sécurité : On récupère l'ID vérifié stocké lors de la connexion
     user_id = request.session.get('verified_user_id')
-    profil_connecte = None
     
-    if user_id:
-        profil_connecte = Utilisateur.objects.filter(id=user_id).first()
+    if not user_id:
+        messages.error(request, "Veuillez vous connecter pour accéder au matching.")
+        return redirect('connexion')
+        
+    profil_connecte = Utilisateur.objects.filter(id=user_id).first()
     
-    # Sécurité : Si aucun utilisateur en session, on prend le premier disponible
     if not profil_connecte:
-        profil_connecte = Utilisateur.objects.first()
+        messages.error(request, "Profil utilisateur introuvable. Veuillez vous reconnecter.")
+        return redirect('connexion')
 
     # Déterminer quel onglet est actif (?tab=offres ou ?tab=demandes)
     onglet_actif = request.GET.get('tab', 'offres')

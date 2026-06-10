@@ -1,14 +1,23 @@
 from django.shortcuts import render, redirect
+from django.contrib import messages  # Importation des messages d'erreur Django
 from app.core.models import Utilisateur, Domaine, Besoin, Maitrise
 from app.publications.models import Demande, DemandeDomaine, DemandeDisponibilite
 from .forms import JOURS_CHOICES, MOMENTS_CHOICES
 
 def offres_view(request):
-    # On récupère l'ID vérifié stocké lors de la connexion
+    # Sécurité : On récupère l'ID vérifié stocké lors de la connexion
     user_id = request.session.get('verified_user_id')
     
-    # Stratégie de récupération du profil métier (Utilisateur)
-    profil_metier = Utilisateur.objects.filter(id=user_id).first() or Utilisateur.objects.first()
+    if not user_id:
+        messages.error(request, "Veuillez vous connecter pour accéder aux offres.")
+        return redirect('connexion')
+    
+    # Stratégie de récupération stricte du profil métier (Utilisateur)
+    profil_metier = Utilisateur.objects.filter(id=user_id).first()
+    
+    if not profil_metier:
+        messages.error(request, "Profil utilisateur introuvable. Veuillez vous reconnecter.")
+        return redirect('connexion')
 
     # ON FILTRE UNIQUEMENT les matières maîtrisées par CET utilisateur
     points_forts = Maitrise.objects.filter(utilisateur=profil_metier)
@@ -42,8 +51,18 @@ def offres_view(request):
 
 
 def demandes_view(request):
+    # Sécurité : On récupère l'ID vérifié stocké lors de la connexion
     user_id = request.session.get('verified_user_id')
-    profil_metier = Utilisateur.objects.filter(id=user_id).first() or Utilisateur.objects.first()
+    
+    if not user_id:
+        messages.error(request, "Veuillez vous connecter pour accéder aux demandes.")
+        return redirect('connexion')
+        
+    profil_metier = Utilisateur.objects.filter(id=user_id).first()
+    
+    if not profil_metier:
+        messages.error(request, "Profil utilisateur introuvable. Veuillez vous reconnecter.")
+        return redirect('connexion')
 
     # ON FILTRE UNIQUEMENT les besoins (points faibles) de CET utilisateur
     points_faibles = Besoin.objects.filter(utilisateur=profil_metier)
