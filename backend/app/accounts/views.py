@@ -16,9 +16,9 @@ from .forms import InscriptionForm, ConnexionForm, DemandeReinitialisationForm, 
 
 def inscription_view(request):
     """
-    Vue d'inscription fluide (Étape 1).
-    Pour simplifier l'onboarding locaux (soutenance), l'utilisateur est activé
-    immédiatement et redirigé de manière asynchrone et automatique vers l'Étape 2 (La filière).
+    Vue d'inscription unifiée et sécurisée (Étape 1).
+    Validation d'e-mail rigoureuse : Crée le compte en mode désactivé (is_active=False)
+    et envoie un courriel sécurisé d'activation pour valider l'identité de l'étudiant.
     """
     if request.method == 'POST':
         form = InscriptionForm(request.POST)
@@ -28,24 +28,35 @@ def inscription_view(request):
             # 1. Hachage du mot de passe
             user.password = make_password(form.cleaned_data['password'])
             
-            # 2. Remplir les contraintes NOT NULL de PostgreSQL
+            # 2. Remplir les contraintes NOT NULL de PostgreSQL pour l'utilisateur standard
             user.is_superuser = False
             user.is_staff = False
             user.date_joined = timezone.now()
-            user.is_active = True  # Activé immédiatement pour un onboarding direct et sans friction !
+            user.is_active = False  # Désactivé en attendant la validation stricte de l'e-mail !
             user.save()
             
             # Sauvegarde temporaire du téléphone dans la session pour l'onboarding profil
             request.session['temp_telephone'] = request.POST.get('telephone', '')
             
-            # Authentification et connexion automatique
-            login(request, user)
-            request.session['verified_user_id'] = user.id
-            request.session['verified_user_email'] = user.email
-            request.session['onboarding_user_id'] = user.id
+            # 3. Génération du token sécurisé d'activation (expire après 24 heures)
+            token = signing.dumps({'username': user.username})
+            uid = urlsafe_base64_encode(force_bytes(user.pk))
             
-            messages.success(request, "Compte créé ! Complétons votre parcours universitaire.")
-            return redirect('etape_filiere')  # Redirection directe vers l'Étape 2 !
+            # Construction du lien d'activation
+            domaine = request.get_host()
+            lien_activation = f"http://{domaine}/activer-compte/{uid}/{token}/"
+            
+            # 4. Envoi réel de l'email via SMTP de production (ou affichage console locaux)
+            sujet = "Activez votre compte - MentorLink IFRI"
+            message_txt = f"Bonjour {user.first_name},\n\nMerci pour votre inscription ! Validez votre email et poursuivez votre parcours universitaire en cliquant sur ce lien sécurisé d'activation : {lien_activation}\n\nSi vous n'êtes pas à l'origine de cette demande, cet e-mail peut être ignoré."
+            
+            send_mail(sujet, message_txt, 'noreply@mentoretude.com', [user.email])
+            
+            messages.success(request, "Inscription réussie ! Un lien de validation de sécurité vous a été envoyé par email.")
+            return redirect('connexion')
+        else:
+            # Erreur globale sécurisée pour éviter l'énumération sauvage d'identifiants
+            messages.error(request, "Nom d'utilisateur ou email déjà enregistré ou non disponible. Veuillez vérifier vos informations.")
     else:
         form = InscriptionForm()
     return render(request, 'registration/inscription.html', {'form': form})
@@ -71,7 +82,7 @@ def connexion(request):
             
             if user is not None:
                 if not user.is_active:
-                    messages.error(request, "Votre compte n'est pas encore activé. Vérifiez vos emails.")
+                    messages.error(request, "Votre compte n'est pas encore activé. Veuillez vérifier vos e-mails pour l'activer.")
                     return render(request, "registration/login.html", {'form': form})
                 
                 # Connexion de la session native Django (request.user sera maintenant peuplé)
@@ -195,6 +206,11 @@ def password_reset_confirm_view(request, uidb64, token):
     
 
 def activer_compte_view(request, uidb64, token):
+    """
+    Validation de sécurité d'adresse e-mail (Étape 2).
+    Active l'utilisateur, l'identifie en session, puis le redirige de manière
+    transparente vers le choix de la filière et des matières !
+    """
     try:
         uid = force_str(urlsafe_base64_decode(uidb64))
         user = AuthUser.objects.get(pk=uid)
@@ -209,9 +225,15 @@ def activer_compte_view(request, uidb64, token):
     if user is not None:
         if not user.is_active:
             AuthUser.objects.filter(pk=user.pk).update(is_active=True)
+            user.is_active = True
         
+        # Identification asynchrone sécurisée pour l'onboarding
+        login(request, user)
+        request.session['verified_user_id'] = user.id
+        request.session['verified_user_email'] = user.email
         request.session['onboarding_user_id'] = user.id
-        messages.success(request, "Votre email a été validé ! Complétons votre profil.")
+        
+        messages.success(request, "Votre e-mail a été validé avec succès ! Complétons votre parcours universitaire.")
         return redirect('etape_filiere')
     else:
         return HttpResponse("Le lien d'activation est invalide ou a expiré.", status=400)
