@@ -383,8 +383,25 @@ def modifier_profil_view(request):
         last_name = request.POST.get('nom') or user_auth.last_name
         telephone = request.POST.get('telephone')
         bio = request.POST.get('bio')
-        filiere = request.POST.get('filiere')
-        niveau = request.POST.get('niveau')
+        
+        # Mappings de sécurité pour les enums PostgreSQL (évite les DataError)
+        filiere_map = {
+            'GL': 'GL',
+            'SI': 'IM',
+            'Securite': 'CYBERSECURITE',
+            'IA': 'IA',
+            'Reseaux': 'SEIOT',
+        }
+        filiere = filiere_map.get(request.POST.get('filiere'), 'GL')
+
+        niveau_map = {
+            'L1': 'LICENCE_1',
+            'L2': 'LICENCE_2',
+            'L3': 'LICENCE_3',
+            'M1': 'LICENCE_3',  # Protection anti-crash pour Master 1
+            'M2': 'LICENCE_3',  # Protection anti-crash pour Master 2
+        }
+        niveau = niveau_map.get(request.POST.get('niveau'), 'LICENCE_3')
 
         if request.FILES.get('photo_profil'):
             fichier_image = request.FILES['photo_profil']
