@@ -36,7 +36,7 @@
         <!-- Icône selon le type -->
         <div class="rounded-circle d-flex align-items-center justify-content-center flex-shrink-0"
              style="width:42px;height:42px;
-             {% if notif.type == 'match'    %}background:rgba(11,60,145,.1);color:var(--ml-primary);
+             {% if notif.type == 'match'    %}background:rgba(11,60,145,.1);color:var(--ml-primary)};     }
              {% elif notif.type == 'message' %}background:rgba(30,136,229,.1);color:var(--ml-secondary);
              {% elif notif.type == 'offre'   %}background:rgba(46,125,50,.1); color:#2e7d32;
              {% elif notif.type == 'demande' %}background:rgba(229,57,53,.1); color:#b91c1c;
@@ -46,7 +46,7 @@
           {% elif notif.type == 'offre'   %}<i class="bi bi-hand-thumbs-up-fill"></i>
           {% elif notif.type == 'demande' %}<i class="bi bi-search-heart-fill"></i>
           {% else %}<i class="bi bi-bell-fill"></i>{% endif %}
-        </div>
+        </div>{}
 
         <!-- Contenu -->
         <div class="flex-grow-1">
