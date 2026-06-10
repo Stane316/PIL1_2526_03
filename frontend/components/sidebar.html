@@ -1,5 +1,5 @@
 <!-- Composant : Sidebar (classe CSS réelle : .sidebar .nav-link) -->
-<nav class="sidebar d-flex flex-column">
+<nav class="ml-sidebar d-flex flex-column">
 
   <!-- Logo -->
   <div class="mb-4">
@@ -40,6 +40,12 @@
        class="nav-link {% if request.resolver_match.url_name == 'demandes' %}active{% endif %}">
       <i class="bi bi-search-heart-fill"></i>
       <span>Demandes</span>
+    </a>
+
+    <a href="{% url 'relations' %}"
+       class="nav-link {% if request.resolver_match.url_name == 'relations' %}active{% endif %}">
+      <i class="bi bi-link-45deg"></i>
+      <span>Relations actives</span>
     </a>
 
     <hr style="border-color: var(--border-light); margin: 0.5rem 0;">
