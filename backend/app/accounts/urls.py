@@ -2,9 +2,10 @@ from django.urls import path
 from . import views
 
 urlpatterns = [
-    path("", views.home_page_view, name='home'),  # Nom 'home' ajouté avec succès !
+    path("", views.home_page_view, name='home'),
     path('inscription/', views.inscription_view, name='inscription'),
     path("connexion", views.connexion, name='connexion'),
+    path("deconnexion/", views.deconnexion_view, name='deconnexion'),  # Route de déconnexion ajoutée !
     path("profil/", views.profil, name="profil"),
     path('profil/modifier/', views.modifier_profil_view, name='modifier_profil'),
     path('mot-de-passe-oublie/', views.mot_de_passe_oublie_view, name='password_reset'),
