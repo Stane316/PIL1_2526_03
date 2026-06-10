@@ -89,6 +89,11 @@ try:
     DB_HOST = config('DB_HOST', default='127.0.0.1')
     DB_PORT = config('DB_PORT', default='5432')
     
+    # SÉCURITÉ CRUCIALE : Si les variables lues sont vides (ex: '', None), on lève une exception
+    # pour forcer Django à basculer sur la base de secours locale SQLite3 !
+    if not DB_NAME or not DB_USER:
+        raise ValueError("PostgreSQL configuration is incomplete or empty.")
+        
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',
