@@ -18,7 +18,7 @@ Jinja2==3.1.6
 MarkupSafe==3.0.3
 nodemon==0.1.2
 numpy==2.4.4
-pillow==12.2.0
+pillow==12.3.0
 psycopg2-binary==2.9.12
 pydantic==2.13.4
 pydantic_core==2.46.4
