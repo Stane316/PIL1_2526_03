@@ -22,7 +22,7 @@ pillow==12.2.0
 psycopg2-binary==2.9.12
 pydantic==2.13.4
 pydantic_core==2.46.4
-pypdf==6.11.0
+pypdf==6.15.0
 python-decouple==3.8
 SQLAlchemy==2.0.50
 sqlparse==0.5.5
