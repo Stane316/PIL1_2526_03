@@ -25,7 +25,7 @@ pydantic_core==2.46.4
 pypdf==6.11.0
 python-decouple==3.8
 SQLAlchemy==2.0.50
-sqlparse==0.5.5
+sqlparse==0.6.0
 starlette==1.2.1
 ttkbootstrap==1.20.3
 typing-inspection==0.4.2
